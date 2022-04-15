@@ -1,94 +1,47 @@
 'use strict';
 
+// Création des variables
+const image = document.querySelector('.item__img')
+const title = document.querySelector('#title')
+const price = document.querySelector('#price')
+const description = document.querySelector('#description')
+const colorSelectElement = document.querySelector('#colors')
+const quantitySelectElement = document.querySelector('#quantity')
+const addToCartButton = document.querySelector('#addToCart')
+
 // Récupération de l'id sur le produit séléctionné en page d'accueil via params
-let params = new URL (document.location).searchParams;
-let id = params.get('id');
+const params = new URL(document.location).searchParams
+const id = params.get('id')
+const cart = []
 
 // Affichage du produit séléctionné en amont sur la page d'accueil
-function displayProduct () {
-        fetch(`http://localhost:3000/api/products/${id}`)
-        .then(response => response.json())
-        .then(product => {
-                document.querySelector('.item__img').innerHTML =
-                    `<img src="${product.imageUrl}"
-                          alt="${product.altTxt}">`
-                document.querySelector('#title').innerHTML =
-                    `<h1>
-                    ${product.name}
-                    </h1>`
-                document.querySelector('#price').innerHTML =
-                    `<p>
-                    ${product.price}
-                    </p>`
-                document.querySelector('#description').innerHTML =
-                    `<p>
-                     ${product.description}
-                    </p>`
-    })
-            // Message d'erreur en das de problème
-            .catch(function(err) {
-                console.error('erreur de chargement des données')
-            })
-};
-displayProduct();
-
-// Création des fonctionnalités de séléction de la couleur
-
-// Récupération des infos de couleurs disponibles selon l'id du produit
-function itemContentSettings () {
-        fetch(`http://localhost:3000/api/products/${id}`)
-        .then(response => response.json())
-        .then(product => {
-            // Création des options de couleurs dans le DOM
-            product.colors.forEach((colors) => {
-                const selectColorInput = document.createElement('option');
-                let contentOfInput = document.createTextNode(`${colors}`);
-                let colorSelectId = document.getElementById('colors');
-
-                selectColorInput.appendChild(contentOfInput);
-                selectColorInput.setAttribute('value', `${colors}`)
-                selectColorInput.setAttribute('id', `${colors}`);
-
-                colorSelectId.appendChild(selectColorInput)
-            });
-})
-            // Message d'erreur en das de problème
-            .catch(function(err) {
-                console.error('erreur de chargement des données')
-            });
-}
-itemContentSettings();
-
-// Création d'un tableau qui va stocker les valeurs choisies par l'utilisateur
-let cartArray = []
-function createCartArray () {
-    // Récupération des informations saisies par l'utilisateur
-    document
-        .getElementById('colors')
-        .addEventListener('change', function colorSelectedByUser() {
-
-            let colorSetting = event.target.value
-            cartArray.push(colorSetting)
-        })
-    document
-        .getElementById('quantity')
-        .addEventListener('change', function quantitySelectedByUser() {
-
-            let quantity = event.target.value
-            cartArray.push(quantity)
-        })
+function displayProduct(product) {
+  image.innerHTML = `<img src="${product.imageUrl}" alt="${product.altTxt}">`
+    title.innerHTML = `<h1>${product.name}</h1>`
+    price.innerHTML = `<p>${product.price}</p>`
+    description.innerHTML = `<p>${product.description}</p>`
+    product.colors.forEach((color) => colorSelectElement.innerHTML += `<option value="${color}">${color}</option>`)
 }
 
-createCartArray();
+/* Création d'une fonction avec condition if:
+*en cas de séléction vide = message d'erreur
+*en cas de séléction valide = ajout des items selectionnés dans un tableau panier puis tableau stocké dans local storage
+ */
+function addToCart() {
+    addToCartButton.addEventListener('click', function () {
+      if (colorSelectElement.value === "" || quantitySelectElement.value <= 0) {
+        alert('Vous devez séléctionner une couleur ET une quantité')
+        return;
+      }
+    cart.push(`id produit: ${id}`, `couleur: ${colorSelectElement.value}`, `quantité: ${quantitySelectElement.value}`)
+    localStorage.setItem('panier', JSON.stringify(cart));
+    alert('Vous avez ajouté ce produit dans votre panier')
+  });
+}
+addToCart()
 
-// création du tableau au clic sur le bouton ajouter au panier
-
-    document
-        .getElementById(addToCart)
-        addEventListener('click', function addToCart() {
-            let addToCartArray = [id +','+ [cartArray]]
-            localStorage.setItem('cartItems', addToCartArray)
-            console.log(addToCartArray)
-});
-
-
+// Récupération des données de l'API
+    fetch(`http://localhost:3000/api/products/${id}`)
+    .then(response => response.json())
+    .then(product => displayProduct(product))
+    .catch(err => console.error(err))
