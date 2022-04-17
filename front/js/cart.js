@@ -1,20 +1,19 @@
 "use strict";
 
+// Déclaration des variables
 const cartItemsElement = document.querySelector('#cart__items')
 
-// Récupération du tableau répértoriant id, couleur et quantité via la page produit
-const cartLinea = localStorage.getItem('panier')
-const cart = JSON.parse(cartLinea)
-console.log(cart)
-
-
+// Lecture des clés et objets stockées dans le local storage puis envoi vers objet 'cart'
+  let produitsEnregistresDansLocalStorage = localStorage.getItem('panier');
+  let cart = JSON.parse(produitsEnregistresDansLocalStorage);
 
 // Injection dans le DOM
 function displayCart(products) {
-  products.forEach((product) => {
-    cartItemsElement.innerHTML +=
-      `<article class="cart__item" data-id="${cart.id_produit}" data-color="${cart.couleur}">
-        <div class="cart__item__img">
+  cart.forEach((item) => {
+    products.forEach((product) => {
+      cartItemsElement.innerHTML +=
+        `<article class="cart__item" data-id="${item.id_produit}" data-color="${item.couleur}">
+          <div class="cart__item__img">
                   <img src="${product.imageUrl}" alt="Photographie d'un canapé">
                 </div>
                 <div class="cart__item__content">
@@ -25,7 +24,7 @@ function displayCart(products) {
                   </div>
                   <div class="cart__item__content__settings">
                     <div class="cart__item__content__settings__quantity">
-                      <p>${cart.quantité}</p>
+                      <p>Qté : ${item.quantité}</p>
                       <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="0">
                     </div>
                     <div class="cart__item__content__settings__delete">
@@ -34,19 +33,14 @@ function displayCart(products) {
                 </div>
         </div>
     </article>`
+    })
   })
 }
 
-
-
-
-
-
-
-
-
 // Récupération des données de l'API
-  fetch(`http://localhost:3000/api/products`)
-    .then(response => response.json())
-    .then(products => displayCart(products))
-    .catch(err => console.error(err))
+
+
+fetch(`http://localhost:3000/api/products`)
+  .then(response => response.json())
+  .then(products => displayCart(products))
+  .catch(err => console.error(err))

@@ -1,8 +1,8 @@
 'use strict';
 
-/* Création des variables */
-/*------------------------*/
+// Création des variables
 
+// Variables de ciblage du DOM
 const image = document.querySelector('.item__img')
 const title = document.querySelector('#title')
 const price = document.querySelector('#price')
@@ -10,18 +10,17 @@ const description = document.querySelector('#description')
 const colorSelectElement = document.querySelector('#colors')
 const quantitySelectElement = document.querySelector('#quantity')
 const addToCartButton = document.querySelector('#addToCart')
+
 // Récupération de l'id sur le produit séléctionné en page d'accueil via params
 const params = new URL(document.location).searchParams
 const id = params.get('id')
-// tableau récueillant les options séléctionnées par l'utilisateur
-const cart = []
+
 // Lecture des clés et objets stockées dans le local storage
 let produitsEnregistresDansLocalStorage = JSON.parse(localStorage.getItem('panier'));
 
 /*------------------------*/
 
-/* Création des fonctions */
-/*------------------------*/
+// Création des fonctions
 
 // Affichage du produit séléctionné en amont sur la page d'accueil
 function displayProduct(product) {
@@ -42,8 +41,6 @@ const popupConfirmation = () => {
   }
 }
 
-/*------------------------*/
-
 // Création de la fonction addToCart permettant de gérer l'envoi des données vers le panier
 
 function addToCart() {
@@ -55,7 +52,11 @@ function addToCart() {
       return;
     }
 
-// Création du tableau et envoi vers localstorage
+    function addToLocalStorage () {
+      produitsEnregistresDansLocalStorage.push(cartInit);
+      localStorage.setItem('panier', JSON.stringify(produitsEnregistresDansLocalStorage))
+      popupConfirmation();
+    }
 
     // Objet qui va acceuillir les données séléctionnées via les input
     let cartInit = {
@@ -66,16 +67,12 @@ function addToCart() {
 
     // Si il y a déjà une clé 'panier' dans le local storage, ajouter les données séléctionnés
     if (produitsEnregistresDansLocalStorage) {
-      produitsEnregistresDansLocalStorage.push(cartInit);
-      localStorage.setItem('panier', JSON.stringify(produitsEnregistresDansLocalStorage))
-      popupConfirmation();
+      addToLocalStorage()
     }
     // Si il n'y a pas de clé 'panier' dans le local storage, création de la clé panier et du tableau
     else {
       produitsEnregistresDansLocalStorage = []
-      produitsEnregistresDansLocalStorage.push(cartInit);
-      localStorage.setItem('panier', JSON.stringify(produitsEnregistresDansLocalStorage))
-      popupConfirmation();
+      addToLocalStorage()
     }
   })
 }
