@@ -4,7 +4,7 @@
 const cartItemsElement = document.querySelector('#cart__items');
 const totalPriceElement = document.querySelector('#totalPrice');
 const totalQuantityElement = document.querySelector('#totalQuantity');
-const quantitySelectElement = document.getElementsByName('itemQuantity');
+const quantitySelectElement = document.querySelector('input[name="itemQuantity"]');
 
 const cart = JSON.parse(localStorage.getItem('cart'));
 const url = `http://localhost:3000/api/products`;
@@ -59,13 +59,23 @@ function cartSum() {
         totalPriceElement.innerHTML = `${totalPrice}`;
 
         // Si l'utilisateur modifie les quantités, cela modifie les totaux
-        function newQuantity (cart){
-          quantitySelectElement.forEach(input => input.addEventListener('input', function (event) {
+        function newQuantity() {
+          itemQuantity = ()=> {
+            let i = document.createElement("input");
+            i.setAttribute("type", "number");
+            i.setAttribute("class", "itemQuantity");
+            i.setAttribute("name", "itemQuantity");
+            i.setAttribute("min=", "1")
+            i.setAttribute("max=", "100");
+            i.setAttribute("value=", "${item.quantity}");
+            let itemQuantityContainer = cartItemsElement;
+            itemQuantityContainer.appendChild(i);
+          };
+          quantitySelectElement.forEach(input => input.addEventListener("change", (event) => {
             console.log(event.target.value);
-            item.splice(2, event.target.value);
-            console.log(cart)
+            item.splice(2, parseIn(event.target.value));
           }));
-        } newQuantity();
+        } newQuantity()
       });
     });
 }
