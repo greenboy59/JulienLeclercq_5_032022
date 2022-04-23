@@ -1,9 +1,14 @@
 'use strict'
 
 // Déclaration des variables
-const cartItemsElement = document.querySelector('#cart__items')
+const cartItemsElement = document.querySelector('#cart__items');
+const totalPriceElement = document.querySelector('#totalPrice');
+const totalQuantityElement = document.querySelector('#totalQuantity');
+const quantitySelectElement = document.getElementsByName('itemQuantity');
 
-const cart = JSON.parse(localStorage.getItem('cart'))
+const cart = JSON.parse(localStorage.getItem('cart'));
+const url = `http://localhost:3000/api/products`;
+const saveToLocalStorage = localStorage.setItem('cart', JSON.stringify(cart));
 
 // Injection dans le DOM
 function displayCart(products) {
@@ -35,8 +40,39 @@ function displayCart(products) {
   })
 }
 
+function cartSum() {
+  // Récupération des données de l'API 
+  fetch(url)
+    .then((products) => products.json())
+    .then(function (products) {
+      // Itération dans le panier
+      cart.forEach((item) => {
+        // On tri les produits de l'API via les données du panier
+        const product = products.find((product) => item.id === product._id);
+
+        // Calcul du total quantity et total price
+        const totalQuantity = Object.values(cart).reduce((itemQuantity, { quantity }) => itemQuantity + Number(quantity), 0,);
+        const totalPrice = product.price * totalQuantity
+
+        // Insertion dans le DOM des totaux
+        totalQuantityElement.innerHTML = `${totalQuantity}`;
+        totalPriceElement.innerHTML = `${totalPrice}`;
+
+        // Si l'utilisateur modifie les quantités, cela modifie les totaux
+        function newQuantity (cart){
+          quantitySelectElement.forEach(input => input.addEventListener('input', function (event) {
+            console.log(event.target.value);
+            item.splice(2, event.target.value);
+            console.log(cart)
+          }));
+        } newQuantity();
+      });
+    });
+}
+cartSum();
+
 // Récupération des données de l'API
-fetch(`http://localhost:3000/api/products`)
+fetch(url)
   .then(response => response.json())
   .then(products => displayCart(products))
   .catch(err => console.error(err))
