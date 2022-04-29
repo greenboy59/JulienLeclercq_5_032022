@@ -87,6 +87,8 @@ function saveProduct() {
 function onClickAddToCart() {
   if (checkProductSelection()) {
     saveProduct();
+    // Alerte produit ajouté
+    alert("Ce produit à bien été ajouté au panier");
   }
 }
 
