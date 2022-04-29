@@ -116,76 +116,72 @@ function deleteCartItem() {
 
 // 3. Constituer un objet contact (à partir des données du formulaire) et un tableau de produits
 
-let formArray = [];
+// Création d'un objet qui va récupérer les données saisies pas l'utilisateur
+let contact = [];
 
-// Mise en place des Regex
-let regEmail = new RegExp("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$", "g");
-let regName = new RegExp("^[a-zA-Zà-ùÀ-Ù- -]+$", "g");
-let regAdress = new RegExp("^[A-Za-z0-9'.-s,]+$", "g");
+// Déclaration des Regex
+const regEmail = new RegExp("^[a-zA-Z.-_0-9]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$","g",);
+const regAddress = new RegExp("^[0-9a-zA-Zà-ùÀ-Ù- -',]+$", "g");
+const regName = new RegExp("^[a-zA-Zà-ùÀ-Ù- -]+$", "g");
 
-// Ciblage dans le DOM
-let emailSelectElement = document.querySelector('input[name="email"]');
-let firstNameSelectElement = document.querySelector('input[name="firstName"]');
-let lastNameSelectElement = document.querySelector('input[name="lastName"]');
-let adressSelectElement = document.querySelector('input[name="address"]');
-let citySelectElement = document.querySelector('input[name="city"]');
-let cartOrderForm = document.querySelector('.cart__order');
+// Fonction permettant de checker le remplissage des input
+function validForm() {
 
-// // Vérification du Prénom
-// function validName() {
-  
-//   // Mise en place de l'écouteur d'événement sur l'input email
-//   firstNameSelectElement.addEventListener("change", function (event) {
-//     lastNameSelectElement.addEventListener("change", function (event) {
-//       // Récupération de la balise 'emailErrorMsg'
-//       let firstNameErrorMsg = firstNameSelectElement.nextElementSibling;
-//       let lastNameErrorMsg = lastNameSelectElement.nextElementSibling;
+  // Parcours tous les éléments dans le formmulaire
+  document.querySelectorAll('.cart__order').forEach((inputForm) => {
 
-//       // Test de l'expression régulière et affichage du message correspondant si true ou false
-//       if (regName.test(event.target.value)) {
-//         firstNameErrorMsg.innerHTML = "Valide";
-//         lastNameErrorMsg.innerHTML = "Valide";
-//         return true;
-//       } else {
-//         firstNameErrorMsg.innerHTML = "INVALIDE";
-//         lastNameErrorMsg.innerHTML = "INVALIDE";
-//         return false;
-//       }
-//     });
-//   });
-// };
-// validName();
+    // Mise en place de l'écouteur d'event
+    inputForm.addEventListener("change", (event) => {
 
-// Vérification de l'email saisi
-function validEmail() {
-  
-  // Mise en place de l'écouteur d'événement sur l'input email
-  emailSelectElement.addEventListener("change", function (event) {
+      // Définition de l'emplacement ou doivent s'afficher les messages d'erreur ou de validation
+      let errorMsg = event.target.nextElementSibling;
 
-    // Récupération de la balise 'emailErrorMsg'
-    let emailErrorMsg = emailSelectElement.nextElementSibling;
+      // Définition de l'élément à tester selon son id
+      let inputToTest = event.target.id
 
-    // Test de l'expression régulière et affichage du message correspondant si true ou false
-    if (regEmail.test(event.target.value)) {
-      emailErrorMsg.innerHTML = "L'adresse email EST valide";
-      return true;
-    } else {
-      emailErrorMsg.innerHTML = "L'adresse email n'est PAS valide";
-      return false;
-    }
+      // Conditions en cas d'expressions régulières correctement ou incorrectement saisies
+      if (event.target) {
+        if ((inputToTest == "firstName" || inputToTest == "lastName") &&
+          (regName.test(event.target.value) || regName.test(event.target.value))) {
+          errorMsg.innerHTML = "VALIDE";
+          return true;
+        }
+        if ((inputToTest == "address" || inputToTest == "city")
+          && (regAddress.test(event.target.value) || regAddress.test(event.target.value))) {
+          errorMsg.innerHTML = "VALIDE";
+          return true;
+        }
+        if (inputToTest === "email" && regEmail.test(event.target.value)) {
+          errorMsg.innerHTML = "VALIDE";
+          return true;
+        }
+        else {
+          errorMsg.innerHTML = "INVALIDE - Veuillez saisir des données correctes";
+          return false;
+        }
+      }
+    })
+  })
+}
+validForm()
+
+// Récupération des données saisies pour envoi vers objet contact
+function sendToContactObject () {
+  document.querySelectorAll("label").forEach((inputLabel) => {
+    console.log(inputLabel.textContent)
   });
-};
-validEmail();
+}
+sendToContactObject()
 
 // ************** VALIDATION DU FORMULAIRE **************
 
-cartOrderForm.addEventListener("submit", function (event) {
-  // Stopper le comportement par défaut afin de mettre une condition de validation des input avant envoi vers page 'confirmation'
-  event.preventDefault();
-  // if (validEmail(emailSelectElement) && // mettre ici les autres validations quand elles seront écrites ){
-  //   cartOrderForm.submit();
-  // }
-});
+document.querySelector(".cart__order__form__submit").addEventListener("submit", function (event) {
+    // Stopper le comportement par défaut afin de mettre une condition de validation des input avant envoi vers page 'confirmation'
+    event.preventDefault();
+    // if (validEmail(emailSelectElement) && // mettre ici les autres validations quand elles seront écrites ){
+    //   cartOrderForm.submit();
+    // }
+  });
 
 
 
