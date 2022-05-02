@@ -183,15 +183,24 @@ function validOrder() {
     contact.push(values);
 
     // Séléction des messages d'erreur dans le DOM afin d'autoriser le submit si tous les champs sont valides 
-    document.querySelectorAll(".cart__order__form__question").forEach((errorMessage) => {
-      let inputValid = errorMessage.querySelector("p").textContent;
-        if (inputValid === 'VALIDE') {
+    let firstNameValidation = document.querySelector("#firstNameErrorMsg").textContent;
+    let lastNameValidation = document.querySelector("#lastNameErrorMsg").textContent;
+    let adressValidation = document.querySelector("#addressErrorMsg").textContent;
+    let cityValidation = document.querySelector("#cityErrorMsg").textContent;
+    let emailValidation = document.querySelector("#emailErrorMsg").textContent;
+
+        if (
+          firstNameValidation === "VALIDE" &&
+          lastNameValidation === "VALIDE" &&
+          adressValidation === "VALIDE" &&
+          cityValidation === "VALIDE" &&
+          emailValidation === "VALIDE"
+        ) {
           console.log("Formulaire autorisé");
         } else {
           console.log("formulaire non valide");
         }
       });
-  });
 }
 validOrder()
 
