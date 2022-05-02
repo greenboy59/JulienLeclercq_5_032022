@@ -1,9 +1,11 @@
 "use strict";
 
 // Déclaration des variables
-const cartItemsElement = document.querySelector("#cart__items");
-const totalPriceElement = document.querySelector("#totalPrice");
 const totalQuantityElement = document.querySelector("#totalQuantity");
+const totalPriceElement = document.querySelector("#totalPrice");
+const cartItemsElement = document.querySelector("#cart__items");
+const submitButton = document.querySelector("#order");
+const formDataElement = document.querySelector("form.cart__order__form");
 
 let cart = JSON.parse(localStorage.getItem("cart"));
 const url = `http://localhost:3000/api/products`;
@@ -17,7 +19,7 @@ function saveToLocalStorage(key, item) {
   localStorage.setItem(key, JSON.stringify(item));
 }
 
-// Injection dans le DOM
+// Injections DOM
 function displayCart(products) {
   cart.forEach((item) => {
     const product = products.find((product) => item.id === product._id);
@@ -56,39 +58,40 @@ function calculateCartAmount() {
     const quantity = element.querySelector("input.itemQuantity").value;
     cartSum += parseInt(price) * parseInt(quantity);
     totalQuantity += parseInt(quantity);
-  })
+  });
   totalQuantityElement.textContent = totalQuantity;
   totalPriceElement.textContent = cartSum;
-}
+}  
 
 // Modifier la quantité d'un produit directement dans le panier via l'input itemQuantity
 function modifyCartQuantity() {
   // Cibler dans le DOM les éléments reliés aux input 
-    document.querySelectorAll("article").forEach((itemSelected) => {
 
+    document.querySelectorAll("article").forEach((itemSelected) => {
       // Récupération des data-id et data-color des produits à modifier
       itemSelected.addEventListener("change", (event) => {
         let idSelectElement = itemSelected.dataset.id;
         let colorSelectElement = itemSelected.dataset.color;
 
         // Mettre en corélation les data du DOM et les éléments dans le panier
-        let productAlreadyInCart = cart.find((product) => product.id === idSelectElement && product.color === colorSelectElement,);
-
+        let productAlreadyInCart = cart.find((product) => product.id === idSelectElement && product.color === colorSelectElement);
+        
         // Si le produit est déjà dans le panier, alors on mets à jour la quantité
         if (productAlreadyInCart) {
           productAlreadyInCart.quantity = event.target.value;
           saveToLocalStorage("cart", cart);
+          calculateCartAmount();
         }
-      });
+      }); 
     });
 }
 
 // Supprimer un produit en cas de click sur le bouton 'supprimer'
 function deleteCartItem() {
   // Ciblage des boutons 'supprimer' dans le DOM
-  document.querySelectorAll(".deleteItem").forEach((deleteButton, index)=> {
+  document.querySelectorAll(".deleteItem").forEach((deleteButton, index) => {
 
-  // Parcours des boutons puis ajout d'un écouteur d'événement 
+    // Parcours des boutons puis ajout d'un écouteur d'événement 
     deleteButton.addEventListener('click', () => {
 
       // Séléction des items dans le panier portant le même index que le produit séléctionné
@@ -108,7 +111,7 @@ function deleteCartItem() {
   })
 }
 
-// ************** VALIDATION EMAIL **************
+// ************** VALIDATION FORMULAIRE DE CONTACT **************
 
 // 1. Récupérer et analyser les données saisies par l’utilisateur dans le formulaire (Attention à bien vérifier les données saisies par l’utilisateur.)
 
@@ -116,7 +119,8 @@ function deleteCartItem() {
 
 // 3. Constituer un objet contact (à partir des données du formulaire) et un tableau de produits
 
-// Création d'un objet qui va récupérer les données saisies pas l'utilisateur
+// Création d'un tableau qui va récupérer les données saisies dans le formulaire
+
 let contact = [];
 
 // Déclaration des Regex
@@ -141,6 +145,7 @@ function validForm() {
 
       // Conditions en cas d'expressions régulières correctement ou incorrectement saisies
       if (event.target) {
+
         if ((inputToTest == "firstName" || inputToTest == "lastName") &&
           (regName.test(event.target.value) || regName.test(event.target.value))) {
           errorMsg.innerHTML = "VALIDE";
@@ -165,26 +170,30 @@ function validForm() {
 }
 validForm()
 
-// Récupération des données saisies pour envoi vers objet contact
-function sendToContactObject () {
-  document.querySelectorAll("label").forEach((inputLabel) => {
-    console.log(inputLabel.textContent)
+function validOrder() {
+  // Ajout d'un écouteur sur le bouton "Commander!"
+  submitButton.addEventListener("click", (event) => {
+
+    // Annulation du comportement par défaut du click afin de donner des instructions avant
+    event.preventDefault();
+
+    // Afficher dans un objet les valeurs du formulaire via formData
+    const formData = new FormData(formDataElement);
+    const values = [...formData.entries()];
+    contact.push(values);
+
+    // Séléction des messages d'erreur dans le DOM afin d'autoriser le submit si tous les champs sont valides 
+    document.querySelectorAll(".cart__order__form__question").forEach((errorMessage) => {
+      let inputValid = errorMessage.querySelector("p").textContent;
+        if (inputValid === 'VALIDE') {
+          console.log("Formulaire autorisé");
+        } else {
+          console.log("formulaire non valide");
+        }
+      });
   });
 }
-sendToContactObject()
-
-// ************** VALIDATION DU FORMULAIRE **************
-
-document.querySelector(".cart__order__form__submit").addEventListener("submit", function (event) {
-    // Stopper le comportement par défaut afin de mettre une condition de validation des input avant envoi vers page 'confirmation'
-    event.preventDefault();
-    // if (validEmail(emailSelectElement) && // mettre ici les autres validations quand elles seront écrites ){
-    //   cartOrderForm.submit();
-    // }
-  });
-
-
-
+validOrder()
 
 // Récupération des données de l'API
 fetch(url)
@@ -195,4 +204,4 @@ fetch(url)
     modifyCartQuantity();
     deleteCartItem();
   })
-  .catch((err) => console.error(err));
+  .catch((err) => console.error(err))
