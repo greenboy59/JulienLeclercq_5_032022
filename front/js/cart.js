@@ -4,9 +4,10 @@
 const totalQuantityElement = document.querySelector("#totalQuantity");
 const totalPriceElement = document.querySelector("#totalPrice");
 const cartItemsElement = document.querySelector("#cart__items");
-const submitButton = document.querySelector("#order");
 const formDataElement = document.querySelector("form.cart__order__form");
+const form = document.querySelector(".cart__order__form");
 
+let allProducts
 let cart = JSON.parse(localStorage.getItem("cart"));
 const url = `http://localhost:3000/api/products`;
 
@@ -19,11 +20,17 @@ function saveToLocalStorage(key, item) {
   localStorage.setItem(key, JSON.stringify(item));
 }
 
+function refreshCart() {
+  displayCart()
+  calculateCartAmount()
+}
+
 // Injections DOM
-function displayCart(products) {
+function displayCart() {
+
   cart.forEach((item) => {
-    const product = products.find((product) => item.id === product._id);
-    cartItemsElement.innerHTML += `<article class="cart__item" data-id="${item.id}" data-color="${item.color}">
+    let product = allProducts.find((product) => item.id === product._id);
+    cartItemsElement.innerHTML += `<article class="cart__item">
           <div class="cart__item__img">
             <img src="${product.imageUrl}" alt="Photographie d'un canapé">
           </div>
@@ -37,7 +44,7 @@ function displayCart(products) {
             <div class="cart__item__content__settings__quantity">
               <label>Qté:</label>
               <p> </p>
-              <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${item.quantity}">
+              <input data-id="${item.id}" data-color="${item.color}" type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${item.quantity}">
             </div>
             <div class="cart__item__content__settings__delete">
               <p class="deleteItem">Supprimer</p>
@@ -64,25 +71,26 @@ function calculateCartAmount() {
 }  
 
 // Modifier la quantité d'un produit directement dans le panier via l'input itemQuantity
-function modifyCartQuantity() {
-  // Cibler dans le DOM les éléments reliés aux input 
+function addInputEventListeners() {
+  // Cibler dans le DOM les éléments reliés aux input
 
-    document.querySelectorAll("article").forEach((itemSelected) => {
-      // Récupération des data-id et data-color des produits à modifier
-      itemSelected.addEventListener("change", (event) => {
-        let idSelectElement = itemSelected.dataset.id;
-        let colorSelectElement = itemSelected.dataset.color;
+  const quantitySelectElement = document.querySelectorAll('input[name="itemQuantity"]',);
+    // Récupération des data-id et data-color des produits à modifier
+    quantitySelectElement.forEach((element) => {
+      element.addEventListener("input", (event) => {
+        let selectElementId = element.dataset.id;
+        let selectElementColor = element.dataset.color;
 
         // Mettre en corélation les data du DOM et les éléments dans le panier
-        let productAlreadyInCart = cart.find((product) => product.id === idSelectElement && product.color === colorSelectElement);
-        
+        let productAlreadyInCart = cart.find((product) => product.id === selectElementId && product.color === selectElementColor,);
+
         // Si le produit est déjà dans le panier, alors on mets à jour la quantité
         if (productAlreadyInCart) {
           productAlreadyInCart.quantity = event.target.value;
           saveToLocalStorage("cart", cart);
-          calculateCartAmount();
+          calculateCartAmount()
         }
-      }); 
+      });
     });
 }
 
@@ -98,15 +106,18 @@ function deleteCartItem() {
       let idToDelete = cart[index].id;
       let colorToDelete = cart[index].color;
 
-      // Application d'une méthode filter afin de supprimer le produit concerné par le bouton 'supprimer'
-      cart = cart.filter((product) => product.id !== idToDelete && product.coulor !== colorToDelete,);
-
-      // Mise à jour du local storage
+      // Application d'une méthode find afin de trouver le produit concerné par le bouton 'supprimer'
+      let findItemToDelete = cart.find((product) => product.id === idToDelete && product.color === colorToDelete,);
+      // Méthode indexOf afin de trouver l'index de l'objet a supprimer dans l'objet cart
+      let itemTodelete = cart.indexOf(findItemToDelete)
+      // Méthode Cart.splice afin de supprimer l'item via son index
+      cart.splice(itemTodelete, 1);
+      
       saveToLocalStorage("cart", cart)
 
       //Alerte produit supprimé et reload de la page
       alert("Ce produit a bien été supprimé de votre panier");
-      location.reload();
+      location.reload()
     });
   })
 }
@@ -121,86 +132,120 @@ function deleteCartItem() {
 
 // Création d'un tableau qui va récupérer les données saisies dans le formulaire
 
-let contact = [];
+let getContact = []
+const contact = Object.fromEntries(getContact);
 
-// Déclaration des Regex
-const regEmail = new RegExp("^[a-zA-Z.-_0-9]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$","g",);
-const regAddress = new RegExp("^[0-9a-zA-Zà-ùÀ-Ù- -',]+$", "g");
-const regName = new RegExp("^[a-zA-Zà-ùÀ-Ù- -]+$", "g");
+const regEmail = new RegExp("^[a-zA-Z.-_0-9]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$");
+const regAddress = new RegExp("^[0-9a-zA-Zà-ùÀ-Ù- -',]+$");
+const reg = new RegExp("^[a-zA-Zà-ùÀ-Ù- -']+$");
 
-// Fonction permettant de checker le remplissage des input
-function validForm() {
+// Ciblage dans le DOM
+const firstNameInput = document.getElementById('firstName');
+const firstNameErrorMsgElement = document.getElementById('firstNameErrorMsg');
+const lastNameInput = document.getElementById('lastName');
+const lastNameErrorMsgElement = document.getElementById("lastNameErrorMsg");
+const addressInput = document.getElementById('address');
+const addressErrorMsgElement = document.getElementById('addressErrorMsg');
+const cityInput = document.getElementById("city");
+const cityErrorMsgElement = document.getElementById("cityErrorMsg");
+const emailInput = document.getElementById('email');
+const emailErrorMsgElement = document.getElementById("emailErrorMsg");
 
-  // Parcours tous les éléments dans le formmulaire
-  document.querySelectorAll('.cart__order').forEach((inputForm) => {
+// Mise en place des écouteurs d'evenements et des messages d'erreurs
+firstNameInput.addEventListener("input", (event) => {
+  if (!reg.test(event.target.value)) {
+    firstNameErrorMsgElement.textContent = "Prénom invalide - Nombres et caractères spéciaux non autorisés";
+  } else {
+    firstNameErrorMsgElement.textContent = '';
+  }
+});
 
-    // Mise en place de l'écouteur d'event
-    inputForm.addEventListener("change", (event) => {
+lastNameInput.addEventListener("input", (event) => {
+  if (!reg.test(event.target.value)) {
+    lastNameErrorMsgElement.textContent = "Nom invalide - Nombres et caractères spéciaux non autorisés";
+  } else {
+    lastNameErrorMsgElement.textContent = '';
+  }
+});
 
-      // Définition de l'emplacement ou doivent s'afficher les messages d'erreur ou de validation
-      let errorMsg = event.target.nextElementSibling;
+addressInput.addEventListener("input", (event) => {
+  if (!regAddress.test(event.target.value)) {
+    addressErrorMsgElement.textContent = "Adresse invalide - L'adresse saisie ne doit pas contenir de caractères spéciaux";
+  } else {
+    addressErrorMsgElement.textContent = '';
+  }
+});
 
-      // Définition de l'élément à tester selon son id
-      let inputToTest = event.target.id
+cityInput.addEventListener("input", (event) => {
+  if (!reg.test(event.target.value)) {
+    cityErrorMsgElement.textContent = "Ville invalide - La ville saisie ne doit contenir ni caractères spéciaux ni nombres";
+  } else {
+    cityErrorMsgElement.textContent = '';
+  }
+});
 
-      // Conditions en cas d'expressions régulières correctement ou incorrectement saisies
-      if (event.target) {
+emailInput.addEventListener("input", (event) => {
+  if (!regEmail.test(event.target.value)) {
+    emailErrorMsgElement.textContent = "Email invalide - Un mail contient au moins le signe @ et une extension (.fr, .com, etc...)";
+  } else {
+    emailErrorMsgElement.textContent = '';
+  }
+});
 
-        if ((inputToTest == "firstName" || inputToTest == "lastName") &&
-          (regName.test(event.target.value) || regName.test(event.target.value))) {
-          errorMsg.innerHTML = "VALIDE";
-          return true;
-        }
-        if ((inputToTest == "address" || inputToTest == "city")
-          && (regAddress.test(event.target.value) || regAddress.test(event.target.value))) {
-          errorMsg.innerHTML = "VALIDE";
-          return true;
-        }
-        if (inputToTest === "email" && regEmail.test(event.target.value)) {
-          errorMsg.innerHTML = "VALIDE";
-          return true;
-        }
-        else {
-          errorMsg.innerHTML = "INVALIDE - Veuillez saisir des données correctes";
-          return false;
-        }
-      }
-    })
-  })
-}
-validForm()
-
+// Création de la fonction qui va traiter les données du panier, envoyer les informations vers l'API puis emmener l'utilisateur vers la page confirmation
 function validOrder() {
   // Ajout d'un écouteur sur le bouton "Commander!"
-  submitButton.addEventListener("click", (event) => {
-
-    // Annulation du comportement par défaut du click afin de donner des instructions avant
+  form.addEventListener('submit', (event) => {
+    // Annulation du comportement par défaut du click afin de donner des instructions avant submit
     event.preventDefault();
 
-    // Afficher dans un objet les valeurs du formulaire via formData
+    // Création de l'objet contact via formData
     const formData = new FormData(formDataElement);
     const values = [...formData.entries()];
-    contact.push(values);
+    // Conversion du tableau values en object contact pour traitement
+    const contact = Object.fromEntries(values);
 
-    // Séléction des messages d'erreur dans le DOM afin d'autoriser le submit si tous les champs sont valides 
-    let firstNameValidation = document.querySelector("#firstNameErrorMsg").textContent;
-    let lastNameValidation = document.querySelector("#lastNameErrorMsg").textContent;
-    let adressValidation = document.querySelector("#addressErrorMsg").textContent;
-    let cityValidation = document.querySelector("#cityErrorMsg").textContent;
-    let emailValidation = document.querySelector("#emailErrorMsg").textContent;
+    // Création d'un tableau d'id produits
+    let idProducts = [];
+    cart.forEach((product) => {
+      idProducts.push(product.id);
+    })
 
-        if (
-          firstNameValidation === "VALIDE" &&
-          lastNameValidation === "VALIDE" &&
-          adressValidation === "VALIDE" &&
-          cityValidation === "VALIDE" &&
-          emailValidation === "VALIDE"
-        ) {
-          console.log("Formulaire autorisé");
-        } else {
-          console.log("formulaire non valide");
+    // Création d'un objet global reprenant produits et contact
+    const orderArray = {
+      contact: contact,
+      products: idProducts,
+    };
+
+    // Condition si tous les inputs sont correctement remplis, alors on lance le traitement des données et on envoi vers la page confirmation
+    if (firstNameErrorMsgElement.textContent === '' && lastNameErrorMsgElement.textContent === '' &&
+      addressErrorMsgElement.textContent === '' && cityErrorMsgElement.textContent === '' &&
+      emailErrorMsgElement.textContent === ''
+    ) {
+
+      // Création de l'objet pour la méthode POST
+      const postOptions = {
+        method: 'POST',
+        body: JSON.stringify(orderArray),
+        headers: {
+          'Accept': 'application/json',
+          "Content-Type": "application/json"
         }
-      });
+      }
+
+      // Demande du numéro de commande a l'API selon les informations envoyées puis clear du localstorage
+      fetch("http://localhost:3000/api/products/order", postOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          localStorage.clear();
+          const orderId = data.orderId
+          document.location.href = `confirmation.html?orderId=${orderId}`
+        })
+        .catch((err) => console.error(err))
+    } else {
+      event.preventDefault();
+    }
+  });
 }
 validOrder()
 
@@ -208,9 +253,10 @@ validOrder()
 fetch(url)
   .then((response) => response.json())
   .then((products) => {
-    displayCart(products);
+    allProducts = products;
+    displayCart();
     calculateCartAmount();
-    modifyCartQuantity();
+    addInputEventListeners();
     deleteCartItem();
   })
   .catch((err) => console.error(err))
