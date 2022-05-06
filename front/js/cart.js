@@ -8,7 +8,7 @@ const formDataElement = document.querySelector("form.cart__order__form");
 const form = document.querySelector(".cart__order__form");
 
 let allProducts
-let cart = JSON.parse(localStorage.getItem("cart"));
+const cart = JSON.parse(localStorage.getItem("cart"));
 const url = `http://localhost:3000/api/products`;
 
 /**
@@ -21,16 +21,15 @@ function saveToLocalStorage(key, item) {
 }
 
 function refreshCart() {
-  displayCart()
-  calculateCartAmount()
+  displayCart();
+  calculateCartAmount();
 }
 
-// Injections DOM
+// Injection des produits dans le DOM
 function displayCart() {
-
   cart.forEach((item) => {
     let product = allProducts.find((product) => item.id === product._id);
-    cartItemsElement.innerHTML += `<article class="cart__item">
+    cartItemsElement.insertAdjacentHTML('afterbegin', `<article class="cart__item">
           <div class="cart__item__img">
             <img src="${product.imageUrl}" alt="Photographie d'un canapé">
           </div>
@@ -51,7 +50,8 @@ function displayCart() {
             </div>
           </div>
         </div>
-      </article>`;
+      </article>`
+    );
   });
 }
 
@@ -68,11 +68,11 @@ function calculateCartAmount() {
   });
   totalQuantityElement.textContent = totalQuantity;
   totalPriceElement.textContent = cartSum;
-}  
+};
 
 // Modifier la quantité d'un produit directement dans le panier via l'input itemQuantity
 function addInputEventListeners() {
-  // Cibler dans le DOM les éléments reliés aux input
+  // Cibler dans le DOM les éléments reliés aux inputs
 
   const quantitySelectElement = document.querySelectorAll('input[name="itemQuantity"]',);
     // Récupération des data-id et data-color des produits à modifier
@@ -109,32 +109,23 @@ function deleteCartItem() {
       // Application d'une méthode find afin de trouver le produit concerné par le bouton 'supprimer'
       let findItemToDelete = cart.find((product) => product.id === idToDelete && product.color === colorToDelete,);
       // Méthode indexOf afin de trouver l'index de l'objet a supprimer dans l'objet cart
-      let itemTodelete = cart.indexOf(findItemToDelete)
+      let itemToDelete = cart.indexOf(findItemToDelete)
       // Méthode Cart.splice afin de supprimer l'item via son index
-      cart.splice(itemTodelete, 1);
+      cart.splice(itemToDelete, 1);
       
-      saveToLocalStorage("cart", cart)
+      // Envoi vers local storage
+      saveToLocalStorage("cart", cart);
 
       //Alerte produit supprimé et reload de la page
-      alert("Ce produit a bien été supprimé de votre panier");
-      location.reload()
+      alert("Ce produit a bien été supprimé de votre panier"); 
+      window.location.reload()
     });
   })
 }
 
 // ************** VALIDATION FORMULAIRE DE CONTACT **************
 
-// 1. Récupérer et analyser les données saisies par l’utilisateur dans le formulaire (Attention à bien vérifier les données saisies par l’utilisateur.)
-
-// 2. Afficher un message d’erreur si besoin (par exemple lorsqu’un utilisateur renseigne “bonjour” dans le champ “e-mail”) (Lors de la vérification des données via des regex, attention à bien mener des tests pour vérifier le bon fonctionnement des regex.)
-
-// 3. Constituer un objet contact (à partir des données du formulaire) et un tableau de produits
-
-// Création d'un tableau qui va récupérer les données saisies dans le formulaire
-
-let getContact = []
-const contact = Object.fromEntries(getContact);
-
+// Mise en place des regExp
 const regEmail = new RegExp("^[a-zA-Z.-_0-9]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$");
 const regAddress = new RegExp("^[0-9a-zA-Zà-ùÀ-Ù- -',]+$");
 const reg = new RegExp("^[a-zA-Zà-ùÀ-Ù- -']+$");
@@ -151,7 +142,7 @@ const cityErrorMsgElement = document.getElementById("cityErrorMsg");
 const emailInput = document.getElementById('email');
 const emailErrorMsgElement = document.getElementById("emailErrorMsg");
 
-// Mise en place des écouteurs d'evenements et des messages d'erreurs
+// Mise en place des écouteurs d'evenements et des messages d'erreurs sur les inputs
 firstNameInput.addEventListener("input", (event) => {
   if (!reg.test(event.target.value)) {
     firstNameErrorMsgElement.textContent = "Prénom invalide - Nombres et caractères spéciaux non autorisés";
@@ -192,62 +183,65 @@ emailInput.addEventListener("input", (event) => {
   }
 });
 
-// Création de la fonction qui va traiter les données du panier, envoyer les informations vers l'API puis emmener l'utilisateur vers la page confirmation
-function validOrder() {
-  // Ajout d'un écouteur sur le bouton "Commander!"
-  form.addEventListener('submit', (event) => {
-    // Annulation du comportement par défaut du click afin de donner des instructions avant submit
-    event.preventDefault();
+// Ajout d'un écouteur sur le bouton "Commander!"
+form.addEventListener('submit', (event) => {
+  // Annulation du comportement par défaut du click afin de donner des instructions avant submit
+  event.preventDefault();
 
-    // Création de l'objet contact via formData
-    const formData = new FormData(formDataElement);
-    const values = [...formData.entries()];
-    // Conversion du tableau values en object contact pour traitement
-    const contact = Object.fromEntries(values);
+  // Création d'un tableau d'id produits
+  let idProducts = [];
+  cart.forEach((product) => {
+    idProducts.push(product.id);
+  });
 
-    // Création d'un tableau d'id produits
-    let idProducts = [];
-    cart.forEach((product) => {
-      idProducts.push(product.id);
-    })
+  // Création de l'objet contact via formData
+  const formData = new FormData(formDataElement);
+  const values = [...formData.entries()];
 
-    // Création d'un objet global reprenant produits et contact
-    const orderArray = {
-      contact: contact,
-      products: idProducts,
-    };
+  // Conversion du tableau values en object contact pour traitement
+  const contact = Object.fromEntries(values);
 
+  // Création d'un objet global reprenant produits et contact
+  const orderArray = {
+    contact: contact,
+    products: idProducts,
+  };
+
+  // Création de l'objet pour la méthode POST
+  const postOptions = {
+    method: "POST",
+    body: JSON.stringify(orderArray),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  };
+
+  // Création de la fonction qui va traiter et envoyer les données du panier vers l'API puis emmener l'utilisateur vers la page confirmation
+  function sendOrder() {
     // Condition si tous les inputs sont correctement remplis, alors on lance le traitement des données et on envoi vers la page confirmation
-    if (firstNameErrorMsgElement.textContent === '' && lastNameErrorMsgElement.textContent === '' &&
-      addressErrorMsgElement.textContent === '' && cityErrorMsgElement.textContent === '' &&
-      emailErrorMsgElement.textContent === ''
+    if (
+      !!!firstNameErrorMsgElement.textContent &&
+      !!!lastNameErrorMsgElement.textContent &&
+      !!!addressErrorMsgElement.textContent &&
+      !!!cityErrorMsgElement.textContent &&
+      !!!emailErrorMsgElement.textContent
     ) {
-
-      // Création de l'objet pour la méthode POST
-      const postOptions = {
-        method: 'POST',
-        body: JSON.stringify(orderArray),
-        headers: {
-          'Accept': 'application/json',
-          "Content-Type": "application/json"
-        }
-      }
-
-      // Demande du numéro de commande a l'API selon les informations envoyées puis clear du localstorage
+      // Demande du numéro de commande a l'API selon les informations envoyées, clear du localstorage puis envoi vers page confirmation
       fetch("http://localhost:3000/api/products/order", postOptions)
         .then((response) => response.json())
         .then((data) => {
           localStorage.clear();
-          const orderId = data.orderId
-          document.location.href = `confirmation.html?orderId=${orderId}`
+          const orderId = data.orderId;
+          document.location.href = `confirmation.html?orderId=${orderId}`;
         })
-        .catch((err) => console.error(err))
+        .catch((err) => console.error(err));
     } else {
       event.preventDefault();
     }
-  });
-}
-validOrder()
+  }
+  sendOrder();
+})
 
 // Récupération des données de l'API
 fetch(url)
