@@ -9,7 +9,7 @@ const description = document.querySelector("#description");
 const colorSelectElement = document.querySelector("#colors");
 const quantitySelectElement = document.querySelector("#quantity");
 const addToCartButton = document.querySelector("#addToCart");
-const itemsSelectElement = document.querySelector(".item__content__settings");
+const deleteButtonSelectElement = document.querySelector(".item__content__addButton");
 
 // Récupération de l'id sur le produit séléctionné en page d'accueil via params
 const params = new URL(document.location).searchParams;
@@ -53,7 +53,7 @@ function displayPopUpConfirmation() {
     htmlContent = `<div id="popUpConfirmation"><p>Vous devez séléctionner une couleur ET une quantité</p></div>`;
   }
   // Insertion dans le DOM de la fenêtre pop-up à la fin de la div "item__content__settings"
-  itemsSelectElement.insertAdjacentHTML("beforeend", htmlContent);
+  deleteButtonSelectElement.insertAdjacentHTML("afterend", htmlContent);
   const popUpConfirmationElement = document.getElementById("popUpConfirmation");
   // CSS afin de styliser la fenêtre pop-up
   popUpConfirmationElement.style.textAlign = "center";
@@ -122,11 +122,11 @@ function onClickAddToCart() {
 addToCartButton.addEventListener("click", onClickAddToCart);
 
 // Récupération des données de l'API
- fetch(`http://localhost:3000/api/products/${id}`)
-   .then((response) => response.json())
-   .then((product) => {
-     displayProduct(product);
-     checkProductSelection();
-   })
-   .catch((err) => console.error(err));
+fetch(`http://localhost:3000/api/products/${id}`)
+  .then((response) => response.json())
+  .then((product) => {
+    displayProduct(product);
+    checkProductSelection();
+  })
+  .catch((err) => console.error(err));
   

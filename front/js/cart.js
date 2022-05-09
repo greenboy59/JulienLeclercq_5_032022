@@ -27,9 +27,11 @@ function refreshCart() {
 
 // Injection des produits dans le DOM
 function displayCart() {
+  cartItemsElement.innerHTML = "";
   cart.forEach((item) => {
     let product = allProducts.find((product) => item.id === product._id);
-    cartItemsElement.insertAdjacentHTML('afterbegin', `<article class="cart__item">
+    cartItemsElement.insertAdjacentHTML('beforeend',
+      `<article class="cart__item">
           <div class="cart__item__img">
             <img src="${product.imageUrl}" alt="Photographie d'un canapé">
           </div>
@@ -53,6 +55,7 @@ function displayCart() {
       </article>`
     );
   });
+  deleteCartItem()
 }
 
 // Calcul du montant et quantité totale pour l'afficher sur la page
@@ -75,23 +78,23 @@ function addInputEventListeners() {
   // Cibler dans le DOM les éléments reliés aux inputs
 
   const quantitySelectElement = document.querySelectorAll('input[name="itemQuantity"]',);
-    // Récupération des data-id et data-color des produits à modifier
-    quantitySelectElement.forEach((element) => {
-      element.addEventListener("input", (event) => {
-        let selectElementId = element.dataset.id;
-        let selectElementColor = element.dataset.color;
+  // Récupération des data-id et data-color des produits à modifier
+  quantitySelectElement.forEach((element) => {
+    element.addEventListener("input", (event) => {
+      let selectElementId = element.dataset.id;
+      let selectElementColor = element.dataset.color;
 
-        // Mettre en corélation les data du DOM et les éléments dans le panier
-        let productAlreadyInCart = cart.find((product) => product.id === selectElementId && product.color === selectElementColor,);
+      // Mettre en corélation les data du DOM et les éléments dans le panier
+      let productAlreadyInCart = cart.find((product) => product.id === selectElementId && product.color === selectElementColor,);
 
-        // Si le produit est déjà dans le panier, alors on mets à jour la quantité
-        if (productAlreadyInCart) {
-          productAlreadyInCart.quantity = event.target.value;
-          saveToLocalStorage("cart", cart);
-          calculateCartAmount()
-        }
-      });
+      // Si le produit est déjà dans le panier, alors on mets à jour la quantité
+      if (productAlreadyInCart) {
+        productAlreadyInCart.quantity = event.target.value;
+        saveToLocalStorage("cart", cart);
+        calculateCartAmount()
+      }
     });
+  });
 }
 
 // Supprimer un produit en cas de click sur le bouton 'supprimer'
@@ -116,11 +119,36 @@ function deleteCartItem() {
       // Envoi vers local storage
       saveToLocalStorage("cart", cart);
 
-      //Alerte produit supprimé et reload de la page
-      alert("Ce produit a bien été supprimé de votre panier"); 
-      window.location.reload()
+      //Alerte produit supprimé et refresh de l'html
+      displayPopUpProductDeleted();
+      refreshCart();
     });
   })
+}
+
+//fenêtre pop-up
+function displayPopUpProductDeleted() {
+  // Insertion dans le DOM de la fenêtre pop-up à la fin de la div "cart__item"
+  document.querySelector("body").insertAdjacentHTML("afterbegin", `<div id=popUpProductDeleted><p>Produit supprimé du panier</p></div>`);
+  const popUpConfirmationElement = document.getElementById("popUpProductDeleted");
+  // CSS afin de styliser la fenêtre pop-up
+  popUpConfirmationElement.style.textAlign = "center";
+  popUpConfirmationElement.style.position = "fixed";
+  popUpConfirmationElement.style.top = "30px";
+  popUpConfirmationElement.style.right = "30px";
+  popUpConfirmationElement.style.height = "50px";
+  popUpConfirmationElement.style.width = "300px";
+  popUpConfirmationElement.style.fontWeight = "bold";
+  popUpConfirmationElement.style.borderRadius = "15px";
+  popUpConfirmationElement.style.background = "red";
+  // setTimeout afin de fermer automatiquement le pop-up au bout de 2s
+  setTimeout(closePopUp, 2000);
+};
+
+// Fonction fermant la fenêtre pop-up en supprimant la div html afin d'éviter les répétitions dans le html si l'utilisateur clic plusieurs fois sur le bouton
+function closePopUp() {
+  const popUpConfirmationElement = document.querySelector("#popUpProductDeleted");
+  popUpConfirmationElement.remove();
 }
 
 // ************** VALIDATION FORMULAIRE DE CONTACT **************
@@ -183,6 +211,8 @@ emailInput.addEventListener("input", (event) => {
   }
 });
 
+// ************** Préparation et envoi de la commande **************
+
 // Ajout d'un écouteur sur le bouton "Commander!"
 form.addEventListener('submit', (event) => {
   // Annulation du comportement par défaut du click afin de donner des instructions avant submit
@@ -212,7 +242,7 @@ form.addEventListener('submit', (event) => {
     method: "POST",
     body: JSON.stringify(orderArray),
     headers: {
-      Accept: "application/json",
+      'Accept': 'application/json',
       "Content-Type": "application/json",
     },
   };
@@ -248,9 +278,9 @@ fetch(url)
   .then((response) => response.json())
   .then((products) => {
     allProducts = products;
+    deleteCartItem();
     displayCart();
     calculateCartAmount();
     addInputEventListeners();
-    deleteCartItem();
   })
   .catch((err) => console.error(err))

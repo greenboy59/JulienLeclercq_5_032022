@@ -6,8 +6,8 @@ function displayProducts(products) {
         // Création d'une boucle pour itérer les valeurs du tableau de produits
         products.forEach((product) => {
 
-            // Injection dans le DOM avec ittération
-            itemsElement.innerHTML +=
+            // Injection dans le DOM
+            itemsElement.insertAdjacentHTML('beforeend',
                 `<a href='./product.html?id=${product._id}'>
                   <article>
                     <img src='${product.imageUrl}' alt='${product.altTxt}'>
@@ -15,6 +15,7 @@ function displayProducts(products) {
                     <p class='productDescription'>${product.description}</p>
                   </article>
                 </a>`
+            )
         })
     }
 
