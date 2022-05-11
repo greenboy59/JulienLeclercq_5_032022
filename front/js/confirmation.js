@@ -4,11 +4,8 @@
 const params = new URL(document.location).searchParams;
 const orderId = params.get("orderId");
 
-function displayOrderId() {
   // Ciblage dans le DOM
-  const orderIdElement = document.getElementById("orderId");
+const orderIdElement = document.getElementById("orderId");
+  
   // Injection dans le DOM
-  orderIdElement.innerText = orderId;
-}
-
-displayOrderId();
+orderIdElement.innerText = orderId;

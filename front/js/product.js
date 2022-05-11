@@ -16,6 +16,8 @@ const params = new URL(document.location).searchParams;
 const id = params.get("id");
 
 // Création des fonctions
+
+// Pour récupérer des infos du local storage
 /**
  * @param key {string}
  * @returns {any}
@@ -24,6 +26,7 @@ function getFromLocalStorage(key) {
   return JSON.parse(localStorage.getItem(key));
 }
 
+// Pour envoyer des données vers le local storage
 /**
  * @param key {string}
  * @param item {any}
@@ -42,46 +45,6 @@ function displayProduct(product) {
   product.colors.forEach((color) => (colorSelectElement.innerHTML += `<option value="${color}">${color}</option>`),);
 }
 
-// Création d'une fenêtre popup pour les ajouts de produits au panier
-
- //fenêtre pop-up
-function displayPopUpConfirmation() {
-  // Variable testant si les inputs sont vides
-  const inputsEmpty = colorSelectElement.value === "" || quantitySelectElement.value <= 0;
-  let htmlContent = `<div id="popUpConfirmation"><p>Le produit ${title.textContent} à bien été ajouté au panier</p></div>`;
-  if (inputsEmpty) {
-    htmlContent = `<div id="popUpConfirmation"><p>Vous devez séléctionner une couleur ET une quantité</p></div>`;
-  }
-  // Insertion dans le DOM de la fenêtre pop-up à la fin de la div "item__content__settings"
-  deleteButtonSelectElement.insertAdjacentHTML("afterend", htmlContent);
-  const popUpConfirmationElement = document.getElementById("popUpConfirmation");
-  // CSS afin de styliser la fenêtre pop-up
-  popUpConfirmationElement.style.textAlign = "center";
-  popUpConfirmationElement.style.padding = "15px";
-  popUpConfirmationElement.style.marginTop = "15px";
-  popUpConfirmationElement.style.fontWeight = "bold";
-  popUpConfirmationElement.style.background = "#2d3e50";
-  popUpConfirmationElement.style.borderRadius = "15px";
-  if (inputsEmpty) {
-    popUpConfirmationElement.style.background = "red";
-  }
-  // setTimeout afin de fermer automatiquement le pop-up au bout de 2s
-  setTimeout(closePopUp, 2000);
-}
-
-// Fonction fermant la fenêtre pop-up en supprimant la div html afin d'éviter les répétitions dans le html si l'utilisateur clic plusieurs fois sur le bouton
-function closePopUp() {
-  const popUpConfirmationElement = document.querySelector("#popUpConfirmation");
-   popUpConfirmationElement.remove();
-}
-
-// Test du remplissage des inputs
-function checkProductSelection() {
-  if (colorSelectElement.value === "" || quantitySelectElement.value <= 0) {
-    return false;
-  } return true;
-}
-
 // Fonction pour Sauvegarder le produit dans le local storage et mettre à jour la quantité
 function saveProduct() {
   // Récupération des données du local storage insérées dans variable 'cart'
@@ -93,12 +56,10 @@ function saveProduct() {
   }
 
   // Si le même produit/couleur est déjà dans le panier, on mets à jour la quantité
-  let productAlreadyInCart = cart.find((item) => item.id === id && item.color === colorSelectElement.value,);
-  if ("cart" in localStorage && productAlreadyInCart) {
-    if (productAlreadyInCart != undefined) {
+  let productAlreadyInCart = cart.find((item) => item.id === id && item.color === colorSelectElement.value);
+  if (productAlreadyInCart) {
       let newQuantity = Number(quantitySelectElement.value) + Number(productAlreadyInCart.quantity);
       productAlreadyInCart.quantity = newQuantity.toString();
-    }
   } else {
     cart.push({
       id,
@@ -109,13 +70,57 @@ function saveProduct() {
   saveToLocalStorage("cart", cart);
 }
 
+// Création d'une fenêtre popup pour les ajouts de produits au panier
+
+// Règles CSS génériques pour la pop-up
+function defineCss() {
+  const popUpElement = document.getElementById("popUpElement");
+  popUpElement.style.textAlign = "center";
+  popUpElement.style.marginTop = "20px";
+  popUpElement.style.fontWeight = "bold";
+  popUpElement.style.borderRadius = "15px";
+}
+
+ // Fenêtre pop-up de confirmation
+function displayConfirmationPopUp() {
+  // Condition vérifiant si une pop-up est déjà présente afin d'éviter une répétition à l'infini 
+  if (!document.getElementById("popUpElement")) {
+    // Affichage popup "article ajouté au panier"
+    deleteButtonSelectElement.insertAdjacentHTML("afterend", `<div id="popUpElement"><p>Le produit ${title.textContent} à bien été ajouté au panier</p></div>`);
+    defineCss()
+    popUpElement.style.background = "#2d3e50";
+
+    // setTimeout ferme la pop-up au bout de 2s
+    setTimeout(closePopUp, 1500);
+  }
+}
+
+// Fenêtre d'erreur
+function displayErrorPopUp() {
+  // Condition vérifiant si une pop-up est déjà présente afin d'éviter une répétition à l'infini
+  if (!document.getElementById("popUpElement")) {
+    // Affichage popup error
+    deleteButtonSelectElement.insertAdjacentHTML("afterend", `<div id="popUpElement"><p>Vous devez séléctionner une couleur ET une quantité positive</p></div>`);
+    defineCss();
+    popUpElement.style.background = "red";
+
+    // setTimeout ferme la pop-up au bout de 2s
+    setTimeout(closePopUp, 1500);
+  }
+}
+
+// Fonction fermant la fenêtre pop-up en supprimant la div html afin d'éviter les répétitions dans le html si l'utilisateur clic plusieurs fois sur le bouton
+function closePopUp() {
+    popUpElement.remove();
+}
+
 // Au clic sur le bouton 'ajouter au panier', éxecuter la fonction 'saveProduct'
 function onClickAddToCart() {
-  if (checkProductSelection()) {
+  if (colorSelectElement.value && quantitySelectElement.value > 0) {
     saveProduct();
-    displayPopUpConfirmation();
+    displayConfirmationPopUp();
   } else {
-    displayPopUpConfirmation();
+    displayErrorPopUp();
   }
 }
 
@@ -126,7 +131,6 @@ fetch(`http://localhost:3000/api/products/${id}`)
   .then((response) => response.json())
   .then((product) => {
     displayProduct(product);
-    checkProductSelection();
   })
   .catch((err) => console.error(err));
   
