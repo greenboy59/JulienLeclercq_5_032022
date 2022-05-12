@@ -7,7 +7,7 @@ const cartItemsElement = document.querySelector("#cart__items");
 const formDataElement = document.querySelector("form.cart__order__form");
 const form = document.querySelector(".cart__order__form");
 
-let allProducts
+let allProducts;
 const cart = JSON.parse(localStorage.getItem("cart"));
 const url = `http://localhost:3000/api/products`;
 
@@ -23,6 +23,8 @@ function saveToLocalStorage(key, item) {
 function refreshCart() {
   displayCart();
   calculateCartAmount();
+  addEventListenerOnQtyInput();
+  addEventListenerOnDeleteBtn();
 }
 
 // Injection des produits dans le DOM
@@ -30,7 +32,8 @@ function displayCart() {
   cartItemsElement.innerHTML = "";
   cart.forEach((item) => {
     let product = allProducts.find((product) => item.id === product._id);
-    cartItemsElement.insertAdjacentHTML('beforeend',
+    cartItemsElement.insertAdjacentHTML(
+      "beforeend",
       `<article class="cart__item">
           <div class="cart__item__img">
             <img src="${product.imageUrl}" alt="Photographie d'un canapé">
@@ -48,11 +51,11 @@ function displayCart() {
               <input data-id="${item.id}" data-color="${item.color}" type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${item.quantity}">
             </div>
             <div class="cart__item__content__settings__delete">
-              <p class="deleteItem">Supprimer</p>
+              <p data-id="${item.id}" data-color="${item.color}" class="deleteItem">Supprimer</p>
             </div>
           </div>
         </div>
-      </article>`
+      </article>`,
     );
   });
 }
@@ -70,91 +73,108 @@ function calculateCartAmount() {
   });
   totalQuantityElement.textContent = totalQuantity;
   totalPriceElement.textContent = cartSum;
-};
+}
+
+// ************** MISE A JOUR DES QUANTITES **************
+
+let idOfElementToModify;
+let colorOfElementToModify;
+let eventQty;
 
 // Ajout d'un écouteur d'événement pour la modification de quantité et le bouton supprimer
-function addQtyInputEventListener() {
+function addEventListenerOnQtyInput() {
   // Cibler dans le DOM les éléments reliés aux inputs
-
-  const quantitySelectElement = document.querySelectorAll('input[name="itemQuantity"]');
-
-  // ************** MISE A JOUR QUANTITE DANS LE PANIER **************
+  const quantitySelectElement = cartItemsElement.querySelectorAll('input[name="itemQuantity"]');
 
   // Récupération des data-id et data-color des produits à modifier
   quantitySelectElement.forEach((element) => {
     element.addEventListener("input", (event) => {
-      let selectElementId = element.dataset.id;
-      let selectElementColor = element.dataset.color;
-
-      // Mettre en corélation les data du DOM et les éléments dans le panier
-      let productAlreadyInCart = cart.find(
-        (product) =>
-          product.id === selectElementId &&
-          product.color === selectElementColor,
-      );
-
-      // Si le produit est déjà dans le panier, alors on mets à jour la quantité
-      if (productAlreadyInCart) {
-        productAlreadyInCart.quantity = event.target.value;
-        saveToLocalStorage("cart", cart);
-        calculateCartAmount();
-      }
-    });
-  });
-
-  // ************** SUPPRESSION D'UN PRODUIT DANS LE PANIER **************
-
-  // Ciblage des boutons 'supprimer' dans le DOM
-  document.querySelectorAll(".deleteItem").forEach((deleteButton, index) => {
-    // Parcours des boutons puis ajout d'un écouteur d'événement
-    deleteButton.addEventListener("click", () => {
-      // Séléction des items dans le panier portant le même index que le produit séléctionné
-      let idToDelete = cart[index].id;
-      let colorToDelete = cart[index].color;
-
-      // Application d'une méthode find afin de trouver le produit concerné par le bouton 'supprimer'
-      let findItemToDelete = cart.find(
-        (product) =>
-          product.id === idToDelete && product.color === colorToDelete,
-      );
-      // Méthode indexOf afin de trouver l'index de l'objet a supprimer dans l'objet cart
-      let itemToDelete = cart.indexOf(findItemToDelete);
-      // Méthode Cart.splice afin de supprimer l'item via son index
-      cart.splice(itemToDelete, 1);
-
-      // Envoi vers local storage
-      saveToLocalStorage("cart", cart);
-
-      // Alerte produit supprimé et refresh du panier
-      displayPopUpProductDeleted();
-      refreshCart();
+      idOfElementToModify = element.dataset.id;
+      colorOfElementToModify = element.dataset.color
+      eventQty = event.target.value;
+      modifyCartQty();
     });
   });
 }
 
+// Fonction qui modifie la quantité dans le panier selon le nombre indiqué dans les inputs qté
+function modifyCartQty() {
+  // Mettre en corélation les data du DOM et les éléments dans le panier
+  let productAlreadyInCart = cart.find((product) => product.id === idOfElementToModify && product.color === colorOfElementToModify);
+
+  // Si le produit est déjà dans le panier, alors on mets à jour la quantité
+  if (productAlreadyInCart) {
+    productAlreadyInCart.quantity = eventQty;
+    saveToLocalStorage("cart", cart);
+    calculateCartAmount();
+  }
+}
+
+// ************** SUPPRESSION D'UN PRODUIT DANS LE PANIER **************
+
+let selectItemToDelete;
+
+// Ajout d'un écouteur d'événement sur les boutons "supprimer" puis envoi des index vers le tableau "indexOfDeleteItem"
+function addEventListenerOnDeleteBtn () {
+  // Ciblage des boutons 'supprimer' dans le DOM
+  document.querySelectorAll(".deleteItem").forEach((deleteButton) => {
+    // Parcours des boutons puis ajout d'un écouteur d'événement
+    deleteButton.addEventListener("click", () => {
+      displayPopUpProductDeleted();
+      selectItemToDelete = deleteButton;
+    });
+  });
+} 
+
 //fenêtre pop-up
 function displayPopUpProductDeleted() {
-  // Insertion dans le DOM de la fenêtre pop-up à la fin de la div "cart__item"
-  document.querySelector("body").insertAdjacentHTML("afterbegin", `<div id=popUpProductDeleted><p>Produit supprimé du panier</p></div>`);
-  const popUpConfirmationElement = document.getElementById("popUpProductDeleted");
-  // CSS afin de styliser la fenêtre pop-up
-  popUpConfirmationElement.style.textAlign = "center";
-  popUpConfirmationElement.style.position = "fixed";
-  popUpConfirmationElement.style.top = "30px";
-  popUpConfirmationElement.style.right = "30px";
-  popUpConfirmationElement.style.height = "50px";
-  popUpConfirmationElement.style.width = "300px";
-  popUpConfirmationElement.style.fontWeight = "bold";
-  popUpConfirmationElement.style.borderRadius = "15px";
-  popUpConfirmationElement.style.background = "red";
-  // setTimeout afin de fermer automatiquement le pop-up au bout de 2s
-  setTimeout(closePopUp, 1500);
-};
+  // Ouverture d'une fenêtre uniquement si une fenêtre n'est pas déjà ouverte
+  if (!document.getElementById("popUpProductDeleted")) {
+    // Insertion dans le DOM de la fenêtre pop-up avant la balise de fin de la div ".limitedWidthBlockContainer"
+    const deleteSelectElement = document.querySelector(".limitedWidthBlockContainer");
+    // Insertion du code html
+    deleteSelectElement.insertAdjacentHTML(
+      "beforeend",
+      '<div id=popUpProductDeleted><p>Confirmez-vous la suppression?</p><br><button type="button" class="confirmer">CONFIRMER</button><button type="button" class="annuler">ANNULER</button></div>',
+    );
+    // Ciblage de la nouvelle div fraichement créée et du bouton
+    const popUpConfirmationElement = document.getElementById("popUpProductDeleted");
+    const popUpBtn = document.querySelector(".confirmer");
+    // CSS afin de styliser la fenêtre pop-up
+    popUpBtn.style.marginRight = "15px";
+    popUpConfirmationElement.style.textAlign = "center";
+    popUpConfirmationElement.style.font = "bold 18px/1.7 helvetica";
+    popUpConfirmationElement.style.position = "fixed";
+    popUpConfirmationElement.style.top = "50%";
+    popUpConfirmationElement.style.margin = "0 auto";
+    popUpConfirmationElement.style.boxShadow = "2px 2px 10px #2d3e50";
+    popUpConfirmationElement.style.height = "150px";
+    popUpConfirmationElement.style.width = "350px";
+    popUpConfirmationElement.style.borderRadius = "25px";
+    popUpConfirmationElement.style.background = "#2d3e50";
+    // Ecouteurs d'événements sur les 2 boutons et appel des fonctions
+    document.querySelector(".confirmer").addEventListener("click", deleteItem);
+    document.querySelector(".annuler").addEventListener("click", closePopUp);
+  }
 
-// Fonction fermant la fenêtre pop-up en supprimant la div html afin d'éviter les répétitions dans le html si l'utilisateur clic plusieurs fois sur le bouton
-function closePopUp() {
-  const popUpConfirmationElement = document.querySelector("#popUpProductDeleted");
-  popUpConfirmationElement.remove();
+  // Fonction fermant la fenêtre pop-up en supprimant la div html
+  function closePopUp() {
+    const popUpConfirmationElement = document.querySelector("#popUpProductDeleted");
+    popUpConfirmationElement.remove();
+  }
+}
+
+function deleteItem() {
+  // Utilisation de la méthode findIndex afin de mettre en corélation le produit affiché et le produit dans l'objet "cart"
+  const itemToDelete = cart.findIndex((item) => item.id === selectItemToDelete.dataset.id && item.color === selectItemToDelete.dataset.color);
+  // Retrait du produit dans l'objet "cart"
+  cart.splice(itemToDelete, 1);
+
+  // Mise à jour du local storage
+  saveToLocalStorage("cart", cart);
+
+  // Refresh du panier 
+  refreshCart();
 }
 
 // ************** VALIDATION FORMULAIRE DE CONTACT **************
@@ -165,55 +185,60 @@ const regAddress = new RegExp("^[0-9a-zA-Zà-ùÀ-Ù- -',]+$");
 const regName = new RegExp("^[a-zA-Zà-ùÀ-Ù- -']+$");
 
 // Ciblage dans le DOM
-const firstNameInput = document.getElementById('firstName');
-const firstNameErrorMsgElement = document.getElementById('firstNameErrorMsg');
-const lastNameInput = document.getElementById('lastName');
+const firstNameInput = document.getElementById("firstName");
+const firstNameErrorMsgElement = document.getElementById("firstNameErrorMsg");
+const lastNameInput = document.getElementById("lastName");
 const lastNameErrorMsgElement = document.getElementById("lastNameErrorMsg");
-const addressInput = document.getElementById('address');
-const addressErrorMsgElement = document.getElementById('addressErrorMsg');
+const addressInput = document.getElementById("address");
+const addressErrorMsgElement = document.getElementById("addressErrorMsg");
 const cityInput = document.getElementById("city");
 const cityErrorMsgElement = document.getElementById("cityErrorMsg");
-const emailInput = document.getElementById('email');
+const emailInput = document.getElementById("email");
 const emailErrorMsgElement = document.getElementById("emailErrorMsg");
 
 // Mise en place des écouteurs d'evenements et des messages d'erreurs sur les inputs
 firstNameInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
-    firstNameErrorMsgElement.textContent = "Prénom invalide - Nombres et caractères spéciaux non autorisés";
+    firstNameErrorMsgElement.textContent =
+      "Prénom invalide - Nombres et caractères spéciaux non autorisés";
   } else {
-    firstNameErrorMsgElement.textContent = '';
+    firstNameErrorMsgElement.textContent = "";
   }
 });
 
 lastNameInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
-    lastNameErrorMsgElement.textContent = "Nom invalide - Nombres et caractères spéciaux non autorisés";
+    lastNameErrorMsgElement.textContent =
+      "Nom invalide - Nombres et caractères spéciaux non autorisés";
   } else {
-    lastNameErrorMsgElement.textContent = '';
+    lastNameErrorMsgElement.textContent = "";
   }
 });
 
 addressInput.addEventListener("input", (event) => {
   if (!regAddress.test(event.target.value)) {
-    addressErrorMsgElement.textContent = "Adresse invalide - L'adresse saisie ne doit pas contenir de caractères spéciaux";
+    addressErrorMsgElement.textContent =
+      "Adresse invalide - L'adresse saisie ne doit pas contenir de caractères spéciaux";
   } else {
-    addressErrorMsgElement.textContent = '';
+    addressErrorMsgElement.textContent = "";
   }
 });
 
 cityInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
-    cityErrorMsgElement.textContent = "Ville invalide - La ville saisie ne doit contenir ni caractères spéciaux ni nombres";
+    cityErrorMsgElement.textContent =
+      "Ville invalide - La ville saisie ne doit contenir ni caractères spéciaux ni nombres";
   } else {
-    cityErrorMsgElement.textContent = '';
+    cityErrorMsgElement.textContent = "";
   }
 });
 
 emailInput.addEventListener("input", (event) => {
   if (!regEmail.test(event.target.value)) {
-    emailErrorMsgElement.textContent = "Email invalide - Un mail contient au moins le signe @ et une extension (.fr, .com, etc...)";
+    emailErrorMsgElement.textContent =
+      "Email invalide - Un mail contient au moins le signe @ et une extension (.fr, .com, etc...)";
   } else {
-    emailErrorMsgElement.textContent = '';
+    emailErrorMsgElement.textContent = "";
   }
 });
 
@@ -234,15 +259,15 @@ function getOrder() {
 }
 
 // Ajout d'un écouteur d'événement sur le bouton "Commander!"
-form.addEventListener('submit', (event) => {
+form.addEventListener("submit", (event) => {
   // Annulation du comportement par défaut du click afin de donner des instructions avant submit
   event.preventDefault();
-  const order = getOrder()
+  const order = getOrder();
 
   sendOrder(order);
 });
 
-  // Création de la fonction qui va traiter et envoyer les données du panier vers l'API puis emmener l'utilisateur vers la page confirmation
+// Création de la fonction qui va traiter et envoyer les données du panier vers l'API puis emmener l'utilisateur vers la page confirmation
 function sendOrder(order) {
   // Condition si tous les inputs sont correctement remplis, alors on lance le traitement des données et on envoi vers la page confirmation
   if (
@@ -252,7 +277,6 @@ function sendOrder(order) {
     !cityErrorMsgElement.textContent.length &&
     !emailErrorMsgElement.textContent.length
   ) {
-
     // Création de l'objet pour la méthode POST
     const postOptions = {
       method: "POST",
@@ -279,10 +303,12 @@ fetch(url)
   .then((response) => response.json())
   .then((products) => {
     allProducts = products;
+      addEventListenerOnDeleteBtn();
     if (cart) {
       displayCart();
       calculateCartAmount();
-      addQtyInputEventListener();
+      addEventListenerOnQtyInput();
+      addEventListenerOnDeleteBtn();
     }
   })
-  .catch((err) => console.error(err))
+  .catch((err) => console.error(err));

@@ -73,8 +73,9 @@ function saveProduct() {
 // Création d'une fenêtre popup pour les ajouts de produits au panier
 
 // Règles CSS génériques pour la pop-up
-function defineCss() {
+function defineCss(color) {
   const popUpElement = document.getElementById("popUpElement");
+  popUpElement.style.background = color;
   popUpElement.style.textAlign = "center";
   popUpElement.style.marginTop = "20px";
   popUpElement.style.fontWeight = "bold";
@@ -87,22 +88,20 @@ function displayConfirmationPopUp() {
   if (!document.getElementById("popUpElement")) {
     // Affichage popup "article ajouté au panier"
     deleteButtonSelectElement.insertAdjacentHTML("afterend", `<div id="popUpElement"><p>Le produit ${title.textContent} à bien été ajouté au panier</p></div>`);
-    defineCss()
-    popUpElement.style.background = "#2d3e50";
+    defineCss("#2d3e50")
 
     // setTimeout ferme la pop-up au bout de 2s
     setTimeout(closePopUp, 1500);
   }
 }
 
-// Fenêtre d'erreur
+// Fenêtre pop-up d'erreur
 function displayErrorPopUp() {
   // Condition vérifiant si une pop-up est déjà présente afin d'éviter une répétition à l'infini
   if (!document.getElementById("popUpElement")) {
     // Affichage popup error
     deleteButtonSelectElement.insertAdjacentHTML("afterend", `<div id="popUpElement"><p>Vous devez séléctionner une couleur ET une quantité positive</p></div>`);
-    defineCss();
-    popUpElement.style.background = "red";
+    defineCss("red");
 
     // setTimeout ferme la pop-up au bout de 2s
     setTimeout(closePopUp, 1500);
@@ -133,4 +132,3 @@ fetch(`http://localhost:3000/api/products/${id}`)
     displayProduct(product);
   })
   .catch((err) => console.error(err));
-  
