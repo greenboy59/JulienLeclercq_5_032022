@@ -3,10 +3,9 @@
 const itemsElement = document.getElementById('items')
 
 function displayProducts(products) {
-        // Création d'une boucle pour itérer les valeurs du tableau de produits
+  
         products.forEach((product) => {
 
-            // Injection dans le DOM
             itemsElement.insertAdjacentHTML('beforeend',
                 `<a href='./product.html?id=${product._id}'>
                   <article>
