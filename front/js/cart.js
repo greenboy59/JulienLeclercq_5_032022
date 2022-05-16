@@ -215,7 +215,7 @@ const emailErrorMsgElement = document.getElementById("emailErrorMsg");
 firstNameInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
     firstNameErrorMsgElement.textContent =
-      "Prénom invalide - Nombres et caractères spéciaux non autorisés";
+      "⛔️ Prénom invalide - Nombres et caractères spéciaux non autorisés";
   } else {
     firstNameErrorMsgElement.textContent = "";
   }
@@ -224,7 +224,7 @@ firstNameInput.addEventListener("input", (event) => {
 lastNameInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
     lastNameErrorMsgElement.textContent =
-      "Nom invalide - Nombres et caractères spéciaux non autorisés";
+      "⛔️ Nom invalide - Nombres et caractères spéciaux non autorisés";
   } else {
     lastNameErrorMsgElement.textContent = "";
   }
@@ -233,7 +233,7 @@ lastNameInput.addEventListener("input", (event) => {
 addressInput.addEventListener("input", (event) => {
   if (!regAddress.test(event.target.value)) {
     addressErrorMsgElement.textContent =
-      "Adresse invalide - L'adresse saisie ne doit pas contenir de caractères spéciaux";
+      "⛔️ Adresse invalide - L'adresse saisie ne doit pas contenir de caractères spéciaux";
   } else {
     addressErrorMsgElement.textContent = "";
   }
@@ -242,7 +242,7 @@ addressInput.addEventListener("input", (event) => {
 cityInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
     cityErrorMsgElement.textContent =
-      "Ville invalide - La ville saisie ne doit contenir ni caractères spéciaux ni nombres";
+      "⛔️ Ville invalide - La ville saisie ne doit contenir ni caractères spéciaux ni nombres";
   } else {
     cityErrorMsgElement.textContent = "";
   }
@@ -251,7 +251,7 @@ cityInput.addEventListener("input", (event) => {
 emailInput.addEventListener("input", (event) => {
   if (!regEmail.test(event.target.value)) {
     emailErrorMsgElement.textContent =
-      "Email invalide - Un mail contient au moins le signe @ et une extension (.fr, .com, etc...)";
+      "⛔️ Email invalide - Un mail contient au moins le signe @ et une extension (.fr, .com, etc...)";
   } else {
     emailErrorMsgElement.textContent = "";
   }
@@ -282,7 +282,7 @@ form.addEventListener("submit", (event) => {
 function sendOrder(order) {
   if (!checkQty() && !document.querySelector(".helperSubmit")) {
     document.querySelector(".cart__order__form__submit").insertAdjacentHTML("beforebegin",
-      '<div class="helperSubmit"><p>⛔️ Veuillez corriger les quantités indiquées en rouge !</p></div>'
+      '<div class="helperSubmit"><p>⛔️ Veuillez corriger la / les quantités indiquées en rouge !</p></div>'
     );
     document.querySelector(".helperSubmit").style.font = "bold 1em helvetica, sans-serif";
     document.querySelector(".helperSubmit").style.textAlign = "center";
