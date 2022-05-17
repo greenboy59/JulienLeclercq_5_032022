@@ -46,7 +46,8 @@ function displayCart() {
               <label>Qté:</label>
               <p> </p>
               <input data-id="${item.id}" data-color="${item.color}" type="number" 
-              class="itemQuantity" name="itemQuantity" min="1" max="100" value="${item.quantity}">
+              class="itemQuantity" name="itemQuantity" min="1" max="100"
+              maxlength="3" oninput="changeHandlerQty(this)" value="${item.quantity}">
             </div>
             <div class="cart__item__content__settings__delete">
               <p data-id="${item.id}" data-color="${item.color}" class="deleteItem">Supprimer</p>
@@ -58,13 +59,21 @@ function displayCart() {
   });
 }
 
+function changeHandlerQty(val) {
+  if (Number(val.value) > 100) {
+    val.value = 100;
+  }
+  if (Number(val.value) < 0) {
+    val.value = 0;
+  }
+}
+
 function calculateCartAmount() {
   let cartSum = 0;
   let totalQuantity = 0;
 
   const cartHtmlElements = document.querySelectorAll(".cart__item");
   cartHtmlElements.forEach((element) => {
-
     const price = element.querySelector("span.item__price").textContent;
     const quantity = element.querySelector("input.itemQuantity").value;
 
@@ -77,54 +86,27 @@ function calculateCartAmount() {
 
 // ************** MISE A JOUR DES QUANTITES **************
 
-// Variables stockant les datas des produits à modifier
+// Variables stockant les datas des produits concernés par les quantités à modifier
 let idOfElementToModify;
 let colorOfElementToModify;
 let eventQty;
 
-let elementQtySelector;
-
 function addEventListenerOnQtyInput() {
   const quantitySelectElement = cartItemsElement.querySelectorAll('input[name="itemQuantity"]');
-
   // Récupération des data-id et data-color des produits à modifier
   quantitySelectElement.forEach((element) => {
     element.addEventListener("input", (event) => {
-
       idOfElementToModify = element.dataset.id;
       colorOfElementToModify = element.dataset.color;
       eventQty = event.target.value;
-      elementQtySelector = element;
 
-      checkQty();
+      modifyCartQty();
     });
   });
 }
 
-// Regex utilisée afin d'éviter les caractères type "e" ou "-" et "+" dans les inputs Qté
-const regQty = new RegExp("^([1-9][0-9]?|100)$");
-
-function checkQty() {
-    if (regQty.test(eventQty) && Number.isInteger(Number(eventQty))
-    ) {
-      modifyCartQty();
-      elementQtySelector.style.background = "white";
-
-      if (document.querySelector(".helperSubmit")) {
-        document.querySelector(".helperSubmit").remove();
-      }
-      return true;
-    }
-    else {
-      elementQtySelector.style.background = "red";
-     
-      return false;
-    }
-}
-
 function modifyCartQty() {
-  let productAlreadyInCart = cart.find((product) =>
-    product.id === idOfElementToModify && product.color === colorOfElementToModify);
+  let productAlreadyInCart = cart.find((product) => product.id === idOfElementToModify && product.color === colorOfElementToModify);
 
   if (productAlreadyInCart) {
     productAlreadyInCart.quantity = eventQty;
@@ -138,24 +120,26 @@ function modifyCartQty() {
 // Variable stockant les datas permettant d'identifer le produit séléctionné
 let selectItemToDelete;
 
-function addEventListenerOnDeleteBtn () {
-  document.querySelectorAll(".deleteItem").forEach((deleteButton) => {
-
+function addEventListenerOnDeleteBtn() {
+  const deleteButtonsElement = document.querySelectorAll(".deleteItem");
+  deleteButtonsElement.forEach((deleteButton) => {
     deleteButton.addEventListener("click", () => {
       selectItemToDelete = deleteButton;
-
       displayPopUpProductDeleted();
     });
   });
-} 
+}
 
 function displayPopUpProductDeleted() {
   // Ouverture d'une fenêtre uniquement si une fenêtre n'est pas déjà ouverte
   if (!document.getElementById("popUpProductDeleted")) {
     const deleteSelectElement = document.querySelector(".limitedWidthBlockContainer");
-
     deleteSelectElement.insertAdjacentHTML("beforeend",
-      '<div id=popUpProductDeleted><p> Confirmez - vous la suppression ?</p><br><button type = "button" class= "confirmer"> CONFIRMER </button><button type="button" class="annuler"> ANNULER </button></div>'
+      `<div id=popUpProductDeleted>
+      <p> Confirmez - vous la suppression ?</p><br>
+      <button type = "button" class= "confirmer"> CONFIRMER </button>
+      <button type="button" class="annuler"> ANNULER </button>
+      </div>`
     );
 
     const popUpConfirmationElement = document.getElementById("popUpProductDeleted");
@@ -185,9 +169,7 @@ function closePopUp() {
 
 function deleteItem() {
   const itemToDelete = cart.findIndex((item) => item.id === selectItemToDelete.dataset.id && item.color === selectItemToDelete.dataset.color);
-
   cart.splice(itemToDelete, 1);
-
   saveToLocalStorage("cart", cart);
 
   refreshCart();
@@ -214,45 +196,45 @@ const emailErrorMsgElement = document.getElementById("emailErrorMsg");
 // Mise en place des écouteurs d'evenements et des messages d'erreurs sur les inputs
 firstNameInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
-    firstNameErrorMsgElement.textContent =
-      "⛔️ Prénom invalide - Nombres et caractères spéciaux non autorisés";
-  } else {
+    firstNameErrorMsgElement.textContent = "⛔️ Prénom invalide - Nombres et caractères spéciaux non autorisés";
+  }
+  else {
     firstNameErrorMsgElement.textContent = "";
   }
 });
 
 lastNameInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
-    lastNameErrorMsgElement.textContent =
-      "⛔️ Nom invalide - Nombres et caractères spéciaux non autorisés";
-  } else {
+    lastNameErrorMsgElement.textContent = "⛔️ Nom invalide - Nombres et caractères spéciaux non autorisés";
+  }
+  else {
     lastNameErrorMsgElement.textContent = "";
   }
 });
 
 addressInput.addEventListener("input", (event) => {
   if (!regAddress.test(event.target.value)) {
-    addressErrorMsgElement.textContent =
-      "⛔️ Adresse invalide - L'adresse saisie ne doit pas contenir de caractères spéciaux";
-  } else {
+    addressErrorMsgElement.textContent = "⛔️ Adresse invalide - L'adresse saisie ne doit pas contenir de caractères spéciaux";
+  }
+  else {
     addressErrorMsgElement.textContent = "";
   }
 });
 
 cityInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
-    cityErrorMsgElement.textContent =
-      "⛔️ Ville invalide - La ville saisie ne doit contenir ni caractères spéciaux ni nombres";
-  } else {
+    cityErrorMsgElement.textContent = "⛔️ Ville invalide - La ville saisie ne doit contenir ni caractères spéciaux ni nombres";
+  }
+  else {
     cityErrorMsgElement.textContent = "";
   }
 });
 
 emailInput.addEventListener("input", (event) => {
   if (!regEmail.test(event.target.value)) {
-    emailErrorMsgElement.textContent =
-      "⛔️ Email invalide - Un mail contient au moins le signe @ et une extension (.fr, .com, etc...)";
-  } else {
+    emailErrorMsgElement.textContent = "⛔️ Email invalide - Un mail contient au moins le signe @ et une extension (.fr, .com, etc...)";
+  }
+  else {
     emailErrorMsgElement.textContent = "";
   }
 });
@@ -261,10 +243,8 @@ emailInput.addEventListener("input", (event) => {
 
 function getOrder() {
   const products = cart.map((items) => items.id);
-
   const formData = new FormData(formDataElement);
   const values = [...formData.entries()];
-
   const contact = Object.fromEntries(values);
 
   return { contact, products };
@@ -273,29 +253,21 @@ function getOrder() {
 // Ajout d'un écouteur d'événement sur le bouton "Commander!". Appel de la fonction sendOrder
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-
   const order = getOrder();
-
   sendOrder(order);
 });
 
 function sendOrder(order) {
-  if (!checkQty() && !document.querySelector(".helperSubmit")) {
-    document.querySelector(".cart__order__form__submit").insertAdjacentHTML("beforebegin",
-      '<div class="helperSubmit"><p>⛔️ Veuillez corriger la / les quantités indiquées en rouge !</p></div>'
-    );
-    document.querySelector(".helperSubmit").style.font = "bold 1em helvetica, sans-serif";
-    document.querySelector(".helperSubmit").style.textAlign = "center";
-  } 
+  let totalQtyCheck = document.getElementById("totalQuantity").textContent;
+
   if (
     !firstNameErrorMsgElement.textContent.length &&
     !lastNameErrorMsgElement.textContent.length &&
     !addressErrorMsgElement.textContent.length &&
     !cityErrorMsgElement.textContent.length &&
     !emailErrorMsgElement.textContent.length &&
-    checkQty()
+    Number.isInteger(Number(totalQtyCheck))
   ) {
-
     const postOptions = {
       method: "POST",
       body: JSON.stringify(order),
@@ -314,19 +286,30 @@ function sendOrder(order) {
       })
       .catch((err) => console.error(err));
   }
+  if (isNaN(totalQtyCheck) && !document.querySelector(".helperSubmit")) {
+    document.querySelector(".cart__order__form__submit").insertAdjacentHTML("beforebegin",
+        '<div class="helperSubmit"><p>⛔️ Veuillez vérifier les quantités pour chaque article !</p></div>'
+      );
+    document.querySelector(".helperSubmit").style.font = "bold 1em helvetica, sans-serif";
+    document.querySelector(".helperSubmit").style.textAlign = "center";
+    setTimeout(closeHelperSubmit, 1800);
+  }
+}
+
+function closeHelperSubmit () {
+  document.querySelector(".helperSubmit").remove();
 }
 
 // Récupération des données de l'API
-fetch('http://localhost:3000/api/products')
-  .then((response) => response.json())
-  .then((products) => {
-    allProducts = products;
-      addEventListenerOnDeleteBtn();
-    if (cart) {
-      displayCart();
-      calculateCartAmount();
-      addEventListenerOnQtyInput();
-      addEventListenerOnDeleteBtn();
-    }
-  })
-  .catch((err) => console.error(err));
+  fetch('http://localhost:3000/api/products')
+    .then((response) => response.json())
+    .then((products) => {
+      allProducts = products;
+      if (cart) {
+        displayCart();
+        calculateCartAmount();
+        addEventListenerOnQtyInput();
+        addEventListenerOnDeleteBtn();
+      }
+    })
+    .catch((err) => console.error(err));

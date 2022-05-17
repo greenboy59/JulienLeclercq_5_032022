@@ -74,31 +74,27 @@ function defineCss(color) {
 }
 
 function displayConfirmationPopUp() {
-  // Condition, ouvrir la pop-up uniquement si elle n'est pas déjà présente
   if (!document.getElementById("popUpElement")) {
     itemContentElement.insertAdjacentHTML("afterend",
       `<div id="popUpElement"><p>Le produit ${title.textContent} à bien été ajouté au panier</p></div>`
     );
     defineCss("#2d3e50")
-
     setTimeout(closePopUp, 1800);
   }
 }
 
 function displayErrorPopUp() {
-  // Condition, ouvrir la pop-up uniquement si elle n'est pas déjà présente
   if (!document.getElementById("popUpElement")) {
     itemContentElement.insertAdjacentHTML("afterend",
       `<div id="popUpElement"><p>Vous devez séléctionner une couleur ET une quantité positive inférieure à 100</p></div>`
     );
     defineCss("red");
-
     setTimeout(closePopUp, 1800);
   }
 }
 
 function closePopUp() {
-    popUpElement.remove();
+  popUpElement.remove();
 }
 
 // Regex utilisée afin d'éviter les caractères type "e" ou "-" et "+" dans les inputs Qté
@@ -114,8 +110,8 @@ function onClickAddToCart() {
   ) {
     saveProduct();
     displayConfirmationPopUp();
-  } else {
-
+  }
+  else {
     displayErrorPopUp();
   }
 }
