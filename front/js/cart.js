@@ -66,6 +66,9 @@ function changeHandlerQty(val) {
   if (Number(val.value) < 0) {
     val.value = 0;
   }
+  if (!Number.isInteger(Number(val.value))) {
+    val.value = parseInt(val.value);
+  }
 }
 
 function calculateCartAmount() {
@@ -241,6 +244,10 @@ emailInput.addEventListener("input", (event) => {
 
 // ************** Préparation et envoi de la commande **************
 
+/**
+ * 
+ * @returns {object} Containing datas of contact (from form entries) and products id ([string] <-- array of product _id)
+ */
 function getOrder() {
   const products = cart.map((items) => items.id);
   const formData = new FormData(formDataElement);
@@ -260,6 +267,14 @@ form.addEventListener("submit", (event) => {
 function sendOrder(order) {
   let totalQtyCheck = document.getElementById("totalQuantity").textContent;
 
+  if (isNaN(totalQtyCheck) && !document.querySelector(".helperSubmit")) {
+    document.querySelector(".cart__order__form__submit").insertAdjacentHTML("beforebegin",
+      '<div class="helperSubmit"><p>⛔️ Veuillez vérifier les quantités pour chaque article !</p></div>'
+    );
+    document.querySelector(".helperSubmit").style.font = "bold 1em helvetica, sans-serif";
+    document.querySelector(".helperSubmit").style.textAlign = "center";
+    setTimeout(closeHelperSubmit, 1800);
+  }
   if (
     !firstNameErrorMsgElement.textContent.length &&
     !lastNameErrorMsgElement.textContent.length &&
@@ -272,8 +287,8 @@ function sendOrder(order) {
       method: "POST",
       body: JSON.stringify(order),
       headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
       },
     };
 
@@ -286,14 +301,6 @@ function sendOrder(order) {
       })
       .catch((err) => console.error(err));
   }
-  if (isNaN(totalQtyCheck) && !document.querySelector(".helperSubmit")) {
-    document.querySelector(".cart__order__form__submit").insertAdjacentHTML("beforebegin",
-        '<div class="helperSubmit"><p>⛔️ Veuillez vérifier les quantités pour chaque article !</p></div>'
-      );
-    document.querySelector(".helperSubmit").style.font = "bold 1em helvetica, sans-serif";
-    document.querySelector(".helperSubmit").style.textAlign = "center";
-    setTimeout(closeHelperSubmit, 1800);
-  }
 }
 
 function closeHelperSubmit () {
@@ -301,15 +308,15 @@ function closeHelperSubmit () {
 }
 
 // Récupération des données de l'API
-  fetch('http://localhost:3000/api/products')
-    .then((response) => response.json())
-    .then((products) => {
-      allProducts = products;
-      if (cart) {
-        displayCart();
-        calculateCartAmount();
-        addEventListenerOnQtyInput();
-        addEventListenerOnDeleteBtn();
-      }
-    })
-    .catch((err) => console.error(err));
+fetch('http://localhost:3000/api/products')
+  .then((response) => response.json())
+  .then((products) => {
+    allProducts = products;
+    if (cart) {
+      displayCart();
+      calculateCartAmount();
+      addEventListenerOnQtyInput();
+      addEventListenerOnDeleteBtn();
+    }
+  })
+  .catch((err) => console.error(err));

@@ -86,7 +86,7 @@ function displayConfirmationPopUp() {
 function displayErrorPopUp() {
   if (!document.getElementById("popUpElement")) {
     itemContentElement.insertAdjacentHTML("afterend",
-      `<div id="popUpElement"><p>Vous devez séléctionner une couleur ET une quantité positive inférieure à 100</p></div>`
+      `<div id="popUpElement"><p>Veuillez séléctionner une couleur et un nombre entier inférieur ou égal à 100 pour la quantité</p></div>`
     );
     defineCss("red");
     setTimeout(closePopUp, 1800);
