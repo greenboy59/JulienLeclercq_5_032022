@@ -16,4 +16,5 @@ console when the server starts, e.g. `Listening on port 3001`.
 
 [plan_de_tests.pdf](https://github.com/greenboy59/P5-Dev-Web-Kanap/files/8714065/plan_de_tests.pdf)
 
-[P5 - Site Web Kanap - Présentation des fonctionnalités JavaScript.pdf](https://github.com/greenboy59/P5-Dev-Web-Kanap/files/8714069/P5.-.Site.Web.Kanap.-.Presentation.des.fonctionnalites.JavaScript.pdf)
+[P5 - Site Web Kanap - Présentation des fonctionnalités JavaScript.pdf](https://github.com/greenboy59/P5-Dev-Web-Kanap/files/8729082/P5.-.Site.Web.Kanap.-.Presentation.des.fonctionnalites.JavaScript.pdf)
+
