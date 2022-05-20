@@ -31,6 +31,7 @@ function saveToLocalStorage(key, item) {
   localStorage.setItem(key, JSON.stringify(item));
 }
 
+// Affiche le produit ainsi que ses informations sur la page
 function displayProduct(product) {
   image.innerHTML = `<img src="${product.imageUrl}" alt="${product.altTxt}">`;
   title.innerHTML = `<h1>${product.name}</h1>`;
@@ -63,7 +64,7 @@ function saveProduct() {
   saveToLocalStorage("cart", cart);
 }
 
-// Création d'une fenêtre popup pour les ajouts de produits au panier
+// Définition des règles css pour la fenêtre pop-up
 function defineCss(color) {
   const popUpElement = document.getElementById("popUpElement");
   popUpElement.style.background = color;
@@ -73,6 +74,7 @@ function defineCss(color) {
   popUpElement.style.borderRadius = "15px";
 }
 
+// Affichage de la fenêtre pop-up de confirmation d'ajout au panier
 function displayConfirmationPopUp() {
   if (!document.getElementById("popUpElement")) {
     itemContentElement.insertAdjacentHTML("afterend",
@@ -83,6 +85,7 @@ function displayConfirmationPopUp() {
   }
 }
 
+// Affichage de la fenêtre pop-up indiquant une erreur de saisie
 function displayErrorPopUp() {
   if (!document.getElementById("popUpElement")) {
     itemContentElement.insertAdjacentHTML("afterend",
@@ -93,6 +96,7 @@ function displayErrorPopUp() {
   }
 }
 
+// Fermeture de la fenêtre pop-up
 function closePopUp() {
   popUpElement.remove();
 }
@@ -100,6 +104,7 @@ function closePopUp() {
 // Regex utilisée afin d'éviter les caractères type "e" ou "-" et "+" dans les inputs Qté
 const regQty = new RegExp("^([1-9][0-9]?|100)$");
 
+// Vérifie si les données saisies sont correctes puis ajoute un article au panier ou le met à jour
 function onClickAddToCart() {
   if (
     colorSelectElement.value &&

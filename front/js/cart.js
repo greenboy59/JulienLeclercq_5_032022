@@ -9,6 +9,7 @@ const form = document.querySelector(".cart__order__form");
 let allProducts;
 const cart = JSON.parse(localStorage.getItem("cart"));
 
+// Envoi des données vers le local storage
 /**
  * @param key {string}
  * @param item {any}
@@ -18,6 +19,7 @@ function saveToLocalStorage(key, item) {
   localStorage.setItem(key, JSON.stringify(item));
 }
 
+// Permet de mettre à jour l'afichage des produits et les totaux en cas de moficiation, puis remet en place les écouteurs d'événements
 function refreshCart() {
   displayCart();
   calculateCartAmount();
@@ -25,6 +27,7 @@ function refreshCart() {
   addEventListenerOnDeleteBtn();
 }
 
+// Affiche les produits précédemment ajoutés au panier
 function displayCart() {
   cartItemsElement.innerHTML = "";
   cart.forEach((item) => {
@@ -59,6 +62,7 @@ function displayCart() {
   });
 }
 
+// Vérifie la saisie des inputs Qté et mets à jour si une donnée non souhaitée est entrée
 function changeHandlerQty(val) {
   if (Number(val.value) > 100) {
     val.value = 100;
@@ -71,6 +75,7 @@ function changeHandlerQty(val) {
   }
 }
 
+// Calcul les totaux du panier (qté et prix)
 function calculateCartAmount() {
   let cartSum = 0;
   let totalQuantity = 0;
@@ -94,6 +99,7 @@ let idOfElementToModify;
 let colorOfElementToModify;
 let eventQty;
 
+// Ajoute des écouteus d'évenements sur les inputs qté
 function addEventListenerOnQtyInput() {
   const quantitySelectElement = cartItemsElement.querySelectorAll('input[name="itemQuantity"]');
   // Récupération des data-id et data-color des produits à modifier
@@ -108,6 +114,7 @@ function addEventListenerOnQtyInput() {
   });
 }
 
+// Modifie les quantités selon les saisies dans les inputs
 function modifyCartQty() {
   let productAlreadyInCart = cart.find((product) => product.id === idOfElementToModify && product.color === colorOfElementToModify);
 
@@ -123,6 +130,7 @@ function modifyCartQty() {
 // Variable stockant les datas permettant d'identifer le produit séléctionné
 let selectItemToDelete;
 
+// Ajoute des écouteurs d'événements sur les boutons supprimer
 function addEventListenerOnDeleteBtn() {
   const deleteButtonsElement = document.querySelectorAll(".deleteItem");
   deleteButtonsElement.forEach((deleteButton) => {
@@ -133,6 +141,7 @@ function addEventListenerOnDeleteBtn() {
   });
 }
 
+// Affiche une fenêtre pop-up permettant de valider ou non la suppression d'un produit du panier
 function displayPopUpProductDeleted() {
   // Ouverture d'une fenêtre uniquement si une fenêtre n'est pas déjà ouverte
   if (!document.getElementById("popUpProductDeleted")) {
@@ -165,11 +174,13 @@ function displayPopUpProductDeleted() {
   } 
 }
 
+// Ferme la fenêtre pop-up
 function closePopUp() {
   const popUpConfirmationElement = document.querySelector("#popUpProductDeleted");
   popUpConfirmationElement.remove();
 }
 
+// Supprime un produit du panier 
 function deleteItem() {
   const itemToDelete = cart.findIndex((item) => item.id === selectItemToDelete.dataset.id && item.color === selectItemToDelete.dataset.color);
   cart.splice(itemToDelete, 1);
@@ -196,7 +207,7 @@ const cityErrorMsgElement = document.getElementById("cityErrorMsg");
 const emailInput = document.getElementById("email");
 const emailErrorMsgElement = document.getElementById("emailErrorMsg");
 
-// Mise en place des écouteurs d'evenements et des messages d'erreurs sur les inputs
+// Mise en place des écouteurs d'evenements et des messages d'erreurs sur les inputs via conditions if / else
 firstNameInput.addEventListener("input", (event) => {
   if (!regName.test(event.target.value)) {
     firstNameErrorMsgElement.textContent = "⛔️ Prénom invalide - Nombres et caractères spéciaux non autorisés";
@@ -244,6 +255,7 @@ emailInput.addEventListener("input", (event) => {
 
 // ************** Préparation et envoi de la commande **************
 
+// Retourne les données du formulaire de contact et les id produits 
 /**
  * 
  * @returns {object} Containing datas of contact (from form entries) and products id ([string] <-- array of product _id)
@@ -264,6 +276,7 @@ form.addEventListener("submit", (event) => {
   sendOrder(order);
 });
 
+// Envoi les données a l'API puis envoi vers la page "confirmation"
 function sendOrder(order) {
   let totalQtyCheck = document.getElementById("totalQuantity").textContent;
 
@@ -303,6 +316,7 @@ function sendOrder(order) {
   }
 }
 
+// Ferme la fenêtre pop-up d'erreur sur les quantités
 function closeHelperSubmit () {
   document.querySelector(".helperSubmit").remove();
 }

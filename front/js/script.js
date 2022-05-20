@@ -2,6 +2,7 @@
 
 const itemsElement = document.getElementById('items')
 
+// Affiche les produits sur la page
 function displayProducts(products) {
   
   products.forEach((product) => {
