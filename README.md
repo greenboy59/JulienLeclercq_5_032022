@@ -14,7 +14,7 @@ The server should run on `localhost` with default port `3000`. If the
 server runs on another port for any reason, this is printed to the
 console when the server starts, e.g. `Listening on port 3001`.
 
-[plan_de_tests.pdf](https://github.com/greenboy59/JulienLeclercq_5_032022/files/8769965/plan_de_tests.pdf)
+[plan_de_tests.pdf](https://github.com/greenboy59/P5-Dev-Web-Kanap/files/8714065/plan_de_tests.pdf)
 
 [P5 - Site Web Kanap - Présentation des fonctionnalités JavaScript.pdf](https://github.com/greenboy59/P5-Dev-Web-Kanap/files/8729082/P5.-.Site.Web.Kanap.-.Presentation.des.fonctionnalites.JavaScript.pdf)
 
